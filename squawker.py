@@ -12,8 +12,15 @@ ASSETNAME = "POLITICOIN"
 IPFSDIRPATH = "/opt/squawker/ipfs"
 
 
-def find_latest_messages(count=50):
-    addresses = rvn.listaddressesbyasset(ASSETNAME)
+def find_latest_messages(asset=ASSETNAME, count=50):
+    messages = dict()
+    listed = "[" + ", ".join(rvn.listaddressesbyasset('{"addresses": [], "assetName":asset}')) + "]"
+    print(listed)
+    messages["addresses"] = "[" + ", ".join(rvn.listaddressesbyasset(asset)) + "]"
+    messages["assetName"] = asset
+    deltas = rvn.getaddressdeltas(messages)
+    recursive_print(deltas)
+    input()
 
 
 def recursive_print(dictionary, spacing=0):
@@ -28,7 +35,8 @@ def recursive_print(dictionary, spacing=0):
 
 class Profile:
     def __init__(self, config_file):
-        self.config = json.load(config_file)
+        with open(config_file, 'r') as config_file_handle:
+            self.config = json.load(config_file_handle)
 
     def __getattr__(self, name):
         if name.startswith('__') and name.endswith('__'):
@@ -48,14 +56,6 @@ class Profile:
         # transfer asset_name, qty, to_address, message, expire_time, change_address, asset_change_address
         return rvn.transfer(ASSETNAME, 1, self.address, hash, 0, self.address, self.address)
 
-    def submit_to_ipfs(self, message_data):
-        #create_file_name
-        fn = "_".join([self.address, message_data["timestamp"]]) + ".json"
-        fp = os.path.join(IPFSDIRPATH, fn)
-        with open(fp, 'w') as fh:
-            json.dump(message_data, fh)
-        return ipfs.add(fn)
-
     def compile_message(self, text, multimedia=None):
         message = dict()
         message["sender"] = self.address
@@ -63,7 +63,7 @@ class Profile:
         message["timestamp"] = time.time()
         message["message"] = text
         if multimedia:
-            message["multimedia"] = [media["ipfs_hash"] for media in multimedia if multimedia else None]
+            message["multimedia"] = [media["ipfs_hash"] for media in multimedia]
         return message
 
 
@@ -102,6 +102,16 @@ setup atomic swaps for marketplace sales.
 
 if __name__ == "__main__":
     usr = Profile("config.json")
-    msg = input("What would you like to kaw?")
-    output = usr.send_kaw(msg)
-    print(output)
+    while True:
+        intent = input("Kaw (1) | Read (2) | Exit (3)")
+        if str(intent).strip() == "1":
+            msg = input("What would you like to kaw?")
+            output = usr.send_kaw(msg)
+            print(output)
+        elif str(intent).strip() == "2":
+            find_latest_messages()
+        else:
+            exit(0)
+
+
+
