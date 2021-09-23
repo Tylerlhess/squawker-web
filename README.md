@@ -22,8 +22,9 @@ Edit the config.json - Remove all values that you currently don't have and leave
 
 Create a credentials.py file with 
 
-USER = "<rpc user>" 
-PASSWORD = "<rpc password>"
+USER = "\<rpc user>" 
+
+PASSWORD = "\<rpc password>"
 
 # Message types
 These values represent how to tell what type of Kaw an IPFS hash is.
