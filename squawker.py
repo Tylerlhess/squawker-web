@@ -1,10 +1,16 @@
 from ravenrpc import Ravencoin
 from credentials import USER, PASSWORD
 import json
+import time
+import ipfshttpclient
+import os
 
 rvn = Ravencoin(USER, PASSWORD)
+ipfs = ipfshttpclient.connect()
 
 ASSETNAME = "POLITICOIN"
+IPFSDIRPATH = "/opt/squawker/ipfs"
+
 
 def find_latest_messages(count=50):
     addresses = rvn.listaddressesbyasset(ASSETNAME)
@@ -19,20 +25,48 @@ def recursive_print(dictionary, spacing=0):
             print("  "*spacing, "  ", dictionary[part])
             print()
 
-def send_kaw(message, address):
-    rvn.transfer({"assetName":ASSETNAME, "qty":1, "toAddress":address, "message":message, "expireTime":2000000000, "changeAddress":address, "assetChangeAddress":address})
 
-addresses = rvn.listaddressesbyasset('POLITICOIN')
-for address in addresses['result']:
-    print(address)
-    print(rvn.getaddresstxids(address))
+class Profile:
+    def __init__(self, config_file):
+        self.config = json.load(config_file)
 
-print(addresses)
+    def __getattr__(self, name):
+        if name.startswith('__') and name.endswith('__'):
+            # Python internal stuff
+            raise AttributeError
 
-tx = rvn.decoderawtransaction(rvn.getrawtransaction('2892a737f4fc5c5bf3b403dbe55f509fda64e25715ea77f15a3ec6574eb18cac')['result'])
-recursive_print(tx)
+        if name in self.config:
+            return self.config[name]
+        elif name in self.__dict__:
+            return self.__dict__[name]
+        else:
+            raise AttributeError
 
-recursive_print(rvn.getaddressdeltas({"addresses":["RRUeVZkuk4L329kq1KCpb2Hiwa6GbAo3LW"],"assetName":"POLITICOIN"}))
+    def send_kaw(self, message):
+        hash = ipfs.add_json(self.compile_message(message))
+        ipfs.pin.add(hash)
+        # transfer asset_name, qty, to_address, message, expire_time, change_address, asset_change_address
+        return rvn.transfer(ASSETNAME, 1, self.address, hash, 0, self.address, self.address)
+
+    def submit_to_ipfs(self, message_data):
+        #create_file_name
+        fn = "_".join([self.address, message_data["timestamp"]]) + ".json"
+        fp = os.path.join(IPFSDIRPATH, fn)
+        with open(fp, 'w') as fh:
+            json.dump(message_data, fh)
+        return ipfs.add(fn)
+
+    def compile_message(self, text, multimedia=None):
+        message = dict()
+        message["sender"] = self.address
+        message["profile"] = {"ipfs_hash": self.profile_ipfs_hash, "timestamp": self.profile_timestamp}
+        message["timestamp"] = time.time()
+        message["message"] = text
+        if multimedia:
+            message["multimedia"] = [media["ipfs_hash"] for media in multimedia if multimedia else None]
+        return message
+
+
 
 
 """
@@ -59,12 +93,15 @@ format for tagging in a message
     send small amount of coin to addresses messaging the txid
     used for mentions and hashtags
 
-send message
-    
-
 # use RPC commands for endpoint to generate # addresses.
 
 setup atomic swaps for marketplace sales.
     
 
 """
+
+if __name__ == "__main__":
+    usr = Profile("config.json")
+    msg = input("What would you like to kaw?")
+    output = usr.send_kaw(msg)
+    print(output)
