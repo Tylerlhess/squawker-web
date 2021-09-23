@@ -9,6 +9,22 @@
 
  This code currently needs access to a full Ravencoin node. A standalone client may be available in the future to operate against a standardized API.
 
+# Installation
+Squawker currently requires
+- being run on a full node 
+- being run on an ipfs server
+
+For security reasons only Python3.9 is currently supported
+
+Download Git repo
+
+Edit the config.json - Remove all values that you currently don't have and leave as empty strings. For profile timestamp set it to 0 unless you have manually configured a profile.
+
+Create a credentials.py file with 
+
+USER = "<rpc user>" 
+PASSWORD = "<rpc password>"
+
 # Message types
 These values represent how to tell what type of Kaw an IPFS hash is.
 
