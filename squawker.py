@@ -3,7 +3,6 @@ from credentials import USER, PASSWORD
 import json
 import time
 import ipfshttpclient
-import os
 
 rvn = Ravencoin(USER, PASSWORD)
 ipfs = ipfshttpclient.connect()
@@ -12,25 +11,51 @@ ASSETNAME = "POLITICOIN"
 IPFSDIRPATH = "/opt/squawker/ipfs"
 
 
-def find_latest_messages(asset=ASSETNAME, count=50):
+def tx_to_self(tx):
     messages = dict()
-    listed = "[" + ", ".join(rvn.listaddressesbyasset('{"addresses": [], "assetName":asset}')) + "]"
-    print(listed)
-    messages["addresses"] = "[" + ", ".join(rvn.listaddressesbyasset(asset)) + "]"
+    messages["addresses"] = [tx["address"]]
+    messages["assetName"] = tx["assetName"]
+    deltas = rvn.getaddressdeltas(messages)["result"]
+    neg_delta = [(a["satoshis"], a["address"]) for a in deltas if a["txid"] == tx["txid"] and a["satoshis"] < -99999999]
+    return len(neg_delta)
+
+
+def find_latest_messages(asset=ASSETNAME, count=50):
+    latest = []
+    messages = dict()
+    messages["addresses"] = list(rvn.listaddressesbyasset(asset, False)["result"])
     messages["assetName"] = asset
-    deltas = rvn.getaddressdeltas(messages)
-    recursive_print(deltas)
-    input()
+    deltas = rvn.getaddressdeltas(messages)["result"]
+    for tx in deltas:
+        if tx["satoshis"] == 100000000 and tx_to_self(tx):
+            transaction = rvn.decoderawtransaction(rvn.getrawtransaction(tx["txid"])["result"])["result"]
+            for vout in transaction["vout"]:
+                vout = vout["scriptPubKey"]
+                if vout["type"] == "transfer_asset" and vout["asset"]["name"] == asset and vout["asset"]["amount"] == 1.0:
+                    kaw = {"address": vout["addresses"], "message": vout["asset"]["message"], "block": transaction["locktime"]}
+                    latest.append(kaw)
+    return sorted(latest[:count], key=lambda message: message["block"], reverse=True)
+
+def read_message(message):
+    ipfs_hash = message["message"]
+    doc = ipfs.cat(ipfs_hash)
+    return doc
 
 
 def recursive_print(dictionary, spacing=0):
-    for part in dictionary:
-        if isinstance(dictionary[part], dict):
-            recursive_print(dictionary[part], spacing=spacing+1)
-        else:
-            print("  "*spacing, part)
-            print("  "*spacing, "  ", dictionary[part])
-            print()
+    if isinstance(dictionary, str):
+        print(dictionary)
+    elif isinstance(dictionary, list):
+        print(dictionary)
+    else:
+        for part in dictionary:
+
+            if isinstance(dictionary[part], dict):
+                recursive_print(dictionary[part], spacing=spacing+1)
+            else:
+                print("  "*spacing, part)
+                print("  "*spacing, "  ", dictionary[part])
+                print()
 
 
 class Profile:
@@ -109,7 +134,9 @@ if __name__ == "__main__":
             output = usr.send_kaw(msg)
             print(output)
         elif str(intent).strip() == "2":
-            find_latest_messages()
+            latest = find_latest_messages()
+            for m in latest:
+                print(read_message(m))
         else:
             exit(0)
 
