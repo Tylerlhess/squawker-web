@@ -1,26 +1,11 @@
-from ravenrpc import Ravencoin
-from credentials import USER, PASSWORD
+import squawker_errors
 from account import Account
+from message import Message
 import json
-import time
-import ipfshttpclient
-
-rvn = Ravencoin(USER, PASSWORD)
-ipfs = ipfshttpclient.connect()
-
-ASSETNAME = "POLITICOIN"
-IPFSDIRPATH = "/opt/squawker/ipfs"
+from utils import tx_to_self
+from serverside import *
 
 debug = 0
-
-
-def tx_to_self(tx, size=1):
-    messages = dict()
-    messages["addresses"] = [tx["address"]]
-    messages["assetName"] = tx["assetName"]
-    deltas = rvn.getaddressdeltas(messages)["result"]
-    neg_delta = [(a["satoshis"], a["address"]) for a in deltas if a["txid"] == tx["txid"] and a["satoshis"] < -((size * 100000000)-1)]
-    return len(neg_delta)
 
 
 def find_latest_messages(asset=ASSETNAME, count=50):
@@ -40,33 +25,15 @@ def find_latest_messages(asset=ASSETNAME, count=50):
     return sorted(latest[:count], key=lambda message: message["block"], reverse=True)
 
 
-def find_latest_profile(address, asset=ASSETNAME):
-    latest = []
-    messages = dict()
-    messages["addresses"] = [address]
-    messages["assetName"] = asset
-    deltas = rvn.getaddressdeltas(messages)["result"]
-    for tx in deltas:
-        if tx["satoshis"] == 50000000 and tx_to_self(tx, 0.5):
-            transaction = rvn.decoderawtransaction(rvn.getrawtransaction(tx["txid"])["result"])["result"]
-            for vout in transaction["vout"]:
-                vout = vout["scriptPubKey"]
-                if vout["type"] == "transfer_asset" and vout["asset"]["name"] == asset and vout["asset"]["amount"] == 0.5:
-                    kaw = {"address": vout["addresses"], "message": vout["asset"]["message"], "block": transaction["locktime"]}
-                    latest.append(kaw)
-    return sorted(latest[:1], key=lambda message: message["block"], reverse=True)[0]
-
-
-
-def get_message(message):
-    ipfs_hash = message["message"]
-    doc = ipfs.cat(ipfs_hash)
-    return doc
-
-def get_message_context(message):
-    profile_ipfs_hash = find_latest_profile(message["sender"])["message"]
-    profile = ipfs.cat(profile_ipfs_hash)
-    return json.loads(profile)
+# def get_message(message):
+#     ipfs_hash = message["message"]
+#     doc = ipfs.cat(ipfs_hash)
+#     return doc
+#
+# def get_message_context(message):
+#     profile_ipfs_hash = find_latest_profile(message["sender"])["message"]
+#     profile = ipfs.cat(profile_ipfs_hash)
+#     return json.loads(profile)
 
 
 def recursive_print(dictionary, spacing=0):
@@ -121,7 +88,7 @@ setup atomic swaps for marketplace sales.
 if __name__ == "__main__":
     usr = Account("config.json", ASSETNAME, rvn, ipfs)
     while True:
-        intent = input("Kaw (1) | Read (2) | Update Profile (3) | Exit (4)")
+        intent = input("Kaw (1) | Read (2) | Read XML (3) | Update Profile (4) | Exit (5)")
         if str(intent).strip() == "1":
             msg = input("What would you like to kaw?")
             output = usr.send_kaw(msg)
@@ -130,19 +97,20 @@ if __name__ == "__main__":
             latest = find_latest_messages()
             for m in latest:
                 try:
-                    msg = json.loads(get_message(m))
-                    if "profile" not in msg:
-                        if debug:
-                            print(f" ------------Skipping {msg}")
-                        continue
-                    profile = get_message_context(msg)
-                    print(f"Name: {profile['name']}")
-                    print(f"{msg['message']}")
-                    print(f"Block height{m['block']}")
-                except KeyError:
+                    print(Message(m))
+                except squawker_errors.NotMessage:
                     pass
         elif str(intent).strip() == "3":
-            print(usr.update_profile())
+            latest = find_latest_messages()
+            for m in latest:
+                try:
+                    print(Message(m).xml())
+                except squawker_errors.NotMessage:
+                    pass
+        elif str(intent).strip() == "4":
+            msg = input("Are you sure?(y/N)")
+            if msg.upper() == "Y":
+                print(usr.update_profile())
         else:
             exit(0)
 
