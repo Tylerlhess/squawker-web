@@ -11,6 +11,7 @@ class Profile():
         self.address = address
         self.ipfs_hash = self.find_latest_profile()["message"]
         self.picture = None
+        self.profile_picture = None
         self.validate(self.ipfs_hash)
 
     def validate(self, ipfs_hash):
@@ -49,12 +50,42 @@ class Profile():
         return f"""
         <profile>
             <profile_image>
-                {self.picture}
+                {self.profile_picture}
             </profile_image>
             <profile_name>
                 {self.name}
             </profile_name>
         </profile>"""
+
+    def basic_html(self):
+        return f"""
+        <div class="profile">
+            <div class="profile_img">
+                <img source="squawker.badguyty.com/ipfs/{self.profile_picture}">
+                
+            </div>
+            <div class="profile_content">
+                <div class="profile_name">
+                    {self.name}
+                </div>
+            </div>
+        </div>"""
+
+    def html(self):
+        html_dict = dict()
+        for atb in self.__dict__:
+            if atb == "picture":
+                html_dict["picture"] = self.profile_picture
+            elif atb == "name":
+                html_dict["name"] = self.name
+            elif atb == "address":
+                html_dict["address"] = self.address
+            else:
+                if "others" not in html_dict:
+                    html_dict["others"] = dict()
+                if not callable(atb):
+                    html_dict["others"][atb] = self.__dict__[atb]
+        return html_dict
 
 
 

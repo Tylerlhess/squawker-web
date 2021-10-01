@@ -46,6 +46,8 @@ class Message():
             </text>
         </message>
         """
+    def html(self):
+        return {"profile": Profile(self.sender).html(), "text": self.text}
 
 
 

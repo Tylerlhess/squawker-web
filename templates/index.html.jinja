@@ -1,0 +1,37 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+   <link rel="stylesheet" type="text/css" href="static/styles.css" >
+<title>{% block title %}{% endblock %}</title>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" >
+</head>
+<body>
+<div id="doc" class="yui-t2">
+  <div id="hd">
+    {%  include "header.html.jinja" %}
+  </div>
+  <div id="bd">
+    <div id="yui-main">
+      <div class="yui-b">
+        <div class="yui-gc">
+          <div class="yui-u first">
+            <div class="content">
+                {% include "kaw.html.jinja" %}
+            </div>
+          </div>
+          <div class="yui-u">
+            <div class="content">ads while I have no trending content?</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="yui-b">
+      <div id="secondary">Login here else your profile</div>
+    </div>
+  </div>
+  <div id="ft">
+    {% include "footer.html.jinja" %}
+  </div>
+</div>
+</body>
+</html>
