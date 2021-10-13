@@ -1,7 +1,15 @@
-<div>
-    <div class="pro_pic"><img src="https://cloudflare-ipfs.com/ipfs/{{ profile["picture"] }}" ></div>
-    <div class="pro_data">
-        <div class="pro_name">{{ profile["name"] }}</div>
-        <div class="pro_address">@{{ profile["address"] }}</div>
-    </div>
+<div class="profile_heading">
+    <table>
+        <td>
+            <div class="pro_pic_b">
+            <div class="pro_pic"><img src="https://cloudflare-ipfs.com/ipfs/{{ profile["picture"] }}" ></div>
+            </div>
+        </td>
+        <td>
+            <div class="pro_data">
+                <div class="pro_name">{{ profile["name"] }}</div>
+                <div class="pro_address">@{{ profile["address"] }}</div>
+            </div>
+        </td>
+    </table>
 </div>

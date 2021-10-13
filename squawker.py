@@ -85,14 +85,57 @@ setup atomic swaps for marketplace sales.
 
 """
 
+def process_choices(func, msg=None):
+    args = []
+    msg2 = input("(S)end/(R)aw transaction")
+    msg3 = input("(I)PFS/(F)ile to upload")
+    if msg is not None:
+
+        if msg2.upper() == "S":
+            if msg3.upper() == "I":
+                output = func(msg)
+            else:
+                output = func(msg, pin=False)
+        else:
+            if msg3.upper() == "I":
+                output = func(msg, raw=True)
+            else:
+                output = func(msg, pin=False, raw=True)
+    else:
+        if msg2.upper() == "S":
+            if msg3.upper() == "I":
+                output = func()
+            else:
+                output = func(pin=False)
+        else:
+            if msg3.upper() == "I":
+                output = func(raw=True)
+            else:
+                output = func(pin=False, raw=True)
+    if msg2.upper() == "S":
+        print("Transaction details")
+        print()
+        print(output[0])
+    else:
+        print("Raw transaction that needs RVN funding and Signing")
+        print()
+        print(output[0])
+    if msg3.upper() != "I":
+        print()
+        print("The following file needs to be pined in an IPFS service")
+        print()
+        print(output[1])
+        print()
+        print(f"Hash should be {output[2]}")
+
+
 if __name__ == "__main__":
     usr = Account("config.json", ASSETNAME, rvn, ipfs)
     while True:
         intent = input("Kaw (1) | Read (2) | Read XML (3) | Update Profile (4) | Exit (5)")
         if str(intent).strip() == "1":
             msg = input("What would you like to kaw?")
-            output = usr.send_kaw(msg)
-            print(output)
+            process_choices(usr.send_kaw, msg)
         elif str(intent).strip() == "2":
             latest = find_latest_messages()
             for m in latest:
@@ -110,7 +153,7 @@ if __name__ == "__main__":
         elif str(intent).strip() == "4":
             msg = input("Are you sure?(y/N)")
             if msg.upper() == "Y":
-                print(usr.update_profile())
+                process_choices(usr.update_profile)
         else:
             exit(0)
 

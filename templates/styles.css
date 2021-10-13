@@ -150,7 +150,7 @@ body{text-align:center;}
 	}
 	
 .content{
-	background:#CCC8B3;
+	background:#2a7ae2;
 	border-top:#FFFFFF 2px solid;
 	margin:0;
 	padding:0;
@@ -179,3 +179,38 @@ body{text-align:center;}
 	margin:0;
 	padding:0;
 	}
+
+.profile_heading{
+	height: 50px;
+	background: brown;
+	border-bottom: black 2px solid;
+	margin: 2px;
+	padding: 5px;
+}
+
+.pro_pic{
+	width: 64px;
+	height: 64px;
+	overflow: hidden;
+	clip-path: circle(32px);
+	border: white;
+	position: relative;
+	left: 3px;
+	top: 3px;
+}
+
+.pro_pic_b{
+	width: 70px;
+	height: 70px;
+	overflow: hidden;
+	background: #FFFFFF;
+	clip-path: circle(35px);
+}
+
+.pro_data{
+	color: #FFFFFF;
+}
+
+.kaw_text{
+	margin: 10px;
+}
