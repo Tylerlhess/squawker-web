@@ -1,3 +1,52 @@
+{% from 'bootstrap/form.html' import render_form %}
 <div>
-    You will be able to login here someday soon.
+    {% if session['email'] %}
+        {% if not session['address'] %}
+            <a href="/register_test"> Register with your address </a>
+        {% endif %}
+    {% else %}
+        <a href="/login-google"><img src="/static/btn_google_signin_dark_normal_web.png"></a>
+    {% endif %}
+
 </div>
+
+<p>    =========================<br>
+    BADGUYTY's To Do list:<br>
+    =========================
+    Done 1. Create regestration form<br>
+    Done 2. Create profile database field (thinking storing it in json).<br>
+    Done 3. Create profile form<br>
+        * Load Existing Profile data from json into edit form<br>
+        * Save data into json form<br>
+    Done 4. Create process to register the user and record their rvn address that will be used for the multisig address<br>
+    Done 5. Add way to store p2sh script for 1 of 2 signitures (database field?)<br>
+    6. Add methods in python to handle using p2sh calls for making kaws
+    7. Create Kaw form<br>
+    8. Create Kaw submission endpoint.<br>
+    ==========================<br>
+             Market<br>
+    ===========================<br>
+    9. Create market submission form<br>
+    10. Create market view page<br>
+    11. Create market submission endpoint.<br>
+    12. Create method for atomic transaction creation in python.<br>
+    13. Create method for completing atomic transactions in python.<br>
+    ============================<br>
+             BLOG<br>
+    ============================<br>
+    14. create a Blog submission form<br>
+    15. Create a Blog summary view page<br>
+    16. Create a full Blog view page<br>
+    ===============================<br>
+              Video<br>
+    ===============================<br>
+    17. Create a Video metadata submission page<br>
+    18. Create a Video player page.<br>
+    ===============================<br>
+    Encrypted Content and portal <br>
+    ================================<br>
+    19. Tap into community standards for creation, viewing, and consuming blockchain verified digital rights to media<br>
+
+
+
+</p>

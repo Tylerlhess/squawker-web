@@ -3,10 +3,13 @@ import ipfshttpclient
 from credentials import USER, PASSWORD
 
 try:
-    rvn = Ravencoin(USER, PASSWORD)
+    rvn = Ravencoin(USER, PASSWORD, port=18766)
     rvn.getblockchaininfo()
 except:
-    rvn = None
+    if not rvn:
+        rvn = None
+    print("rvn not defined")
+
 
 try:
     ipfs = ipfshttpclient.connect()
@@ -15,6 +18,8 @@ except:
 
 ASSETNAME = "SQUAWKER"
 IPFSDIRPATH = "/opt/squawker/ipfs"
+TEST_WALLET_ADDRESS = "muQFhbaMSxBDBj5aTu3b8LXuprD5qDnHN9"
+WALLET_ADDRESS = ""
 
 
 

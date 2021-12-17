@@ -9,3 +9,9 @@ class NotRegistered(BaseException):
 
 class NoProfile(BaseException):
     pass
+
+class BadCredentials(BaseException):
+    pass
+
+class AlreadyRegistered(BaseException):
+    pass

@@ -1,7 +1,19 @@
 {% extends "base.html.jinja" %}
 {% block title %}Squawker{% endblock %}
 {% block content %}
-{% include "kaw.html.jinja" %}
+{% if form.address.errors %}
+    <ul class="errors">
+    {% for error in form.address.errors %}
+        <li>{{ error }}</li>
+    {% endfor %}
+    </ul>
+{% endif %}
+<form method="POST" action="/register_test">
+    {{ form.csrf_token }}
+    {{ form.address.label }} {{ form.address(size=35) }}<br>
+    <input type="submit" value="Register">
+</form>
+
 {% endblock %}
 {% block leftcolumn %}
 {% include "wallet.html.jinja" %}
