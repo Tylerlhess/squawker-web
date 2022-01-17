@@ -2,9 +2,10 @@ from requests_oauthlib import OAuth2Session
 from flask import Flask, request, redirect, session, url_for, render_template, send_file, abort
 from flask.json import jsonify
 from markupsafe import escape
-from profile import Profile
-from squawker import *
-from message import Message
+from web_profile import Profile
+from utils import *
+from web_message import Message
+from market import Listing
 import os
 from credentials import GOOGLE_OAUTH2_SECRET, GOOGLE_OAUTH2_CLIENTID, SITE_SECRET_KEY
 from dbconn import Conn
@@ -14,6 +15,7 @@ from forms import *
 from serverside import rvn, TEST_WALLET_ADDRESS, WALLET_ADDRESS
 import logging
 from flask_wtf.csrf import CSRFProtect
+from web_account import Account
 
 #csrf = CSRFProtect()
 
@@ -23,7 +25,7 @@ app = Flask(__name__)
 app.secret_key = SITE_SECRET_KEY
 #csrf.init_app(app)
 
-site_url = 'https://squawker.badguyty.com'
+site_url = 'https://squawker.app'
 
 google_redirect_uri = 'https://squawker.badguyty.com/callback'
 google_authorization_base_url = "https://accounts.google.com/o/oauth2/v2/auth"
@@ -37,19 +39,21 @@ logger.setLevel(logging.DEBUG)
 handler = logging.FileHandler(filename='squawker_app.log', encoding='utf-8', mode='a')
 handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s'))
 logger.addHandler(handler)
+handler2 = logging.FileHandler(filename='squawker.log', encoding='utf-8', mode='a')
+handler2.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s'))
+logger.addHandler(handler2)
 
 
-@app.route("/")
+@app.route("/", methods=['GET'])
 def index():
+    logger.info(f'Session started with {session}')
     latest_msg = find_latest_messages(asset="SQUAWKER")
-    #return str(Message(latest[0]))
     messages = []
     for m in latest_msg:
         try:
             messages.append(Message(m).html())
         except:
             pass
-    #return str(messages)
     return render_template("index.html.jinja", messages=messages)
 
 
@@ -74,38 +78,57 @@ def message(message_address):
     return str(msg)
 
 
-@app.route('/login-google')  # login with google
+@app.route('/login_google')  # login with google
 def logintogoogle():
-    google = OAuth2Session(GOOGLE_OAUTH2_CLIENTID, redirect_uri=site_url + "/callback-google", scope=google_scope)
+    google = OAuth2Session(GOOGLE_OAUTH2_CLIENTID, redirect_uri=site_url + "/callback_google", scope=google_scope)
 
     google_authorization_url, gstate = google.authorization_url(google_authorization_base_url, access_type="offline", prompt="select_account")
     session['oauth_state'] = gstate
     return redirect(google_authorization_url)
 
 
-@app.route('/callback-google')  # login routing with google
+@app.route('/callback_google')  # login routing with google
 def callbackfromgoogle():
-    google = OAuth2Session(GOOGLE_OAUTH2_CLIENTID, redirect_uri=site_url + "/callback-google", state=session['oauth_state'])
+    google = OAuth2Session(GOOGLE_OAUTH2_CLIENTID, redirect_uri=site_url + "/callback_google", state=session['oauth_state'])
 
     google_token = google.fetch_token(google_token_url, client_secret=GOOGLE_OAUTH2_SECRET,
                                       authorization_response=request.url)
 
     session['oauth_token'] = google_token
+    logger.info(f"google callback {session['oauth_token']}")
 
     google = OAuth2Session(GOOGLE_OAUTH2_CLIENTID, token=session['oauth_token'])
     google_user = google.get("https://www.googleapis.com/oauth2/v1/userinfo").json()
 
     email = google_user["email"]
     session['email'] = email
+    logger.info(f"session email = {session['email']} in {session}")
     try:
         conn = Conn()
-        session['address'] = conn.get_address(email)
-        session['phash'], session['ptime'] = conn.get_profile(email)
+        result = conn.get_address(email)
+        logger.info(f'get address returned {result}')
+        session['address'] = result['p2sh_address']
+        session['phash'], session['ptime'] = result['profile_hash'], result['profile_timestamp']
+        if session['phash'] is not None:
+            return redirect(url_for('index'))
+        else:
+            try:
+                if conn.fix_profile(session['address']):
+                    return redirect(url_for('index'))
+                else:
+                    return render_template("setup_profile.html.jinja", form=tRegister())
+            except Exception as e:
+                logger.info(f'{type(e)} {e} returned.')
+                return abort('404')
+
     except NotRegistered:
         return render_template("setup_account.html.jinja", form=tRegister())
     except NoProfile:
         # Has current session top pass account
-        return render_template("setup_profile.html.jinja")
+        return render_template("setup_profile.html.jinja", form=tRegister())
+    except Exception as e:
+        logger.info(f'Raised exception {type(e)} : {e} session is set to {session}')
+        return redirect('/')
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -136,10 +159,11 @@ def tregister():
 
 @app.route("/logout")
 def logout():
-    return redirect("/")
+    session.clear()
+    return redirect("squawker.app/")
 
 
-@app.route('/send-message-file')
+@app.route('/send_message_file')
 def senddownload(filepath=None):
     if filepath is None:
         abort(400)
@@ -149,21 +173,58 @@ def senddownload(filepath=None):
         abort(400)
 
 
-@app.route("/new-message")
+@app.route("/new_message", methods=['GET', 'POST'])
 def new_message():
-    return None
-
-
-@app.route('/edit_profile_test')
-def edit_profile_test():
-    form = EditProfile()
-    logger.info((f"Form values = {form.data}"))
+    form = SendKaw()
+    logger.info(f"/new_message Form values = {form.data}")
     if request.method == 'POST' and form.validate():
-        conn = Conn()
-        session_data = conn.submit_tprofile((session["email"], form.data))
-        for key in session_data:
-            session[key] = session_data[key]
-        return redirect('/')
-    return render_template('edit_profile.html.jinja', form=form)
+        account = Account(session["email"])
+        tx_id, x, hash = account.send_kaw(form.data["kaw"])
+        logger.info(f"/new_message tx id = {tx_id} and hash = {hash}")
+        return redirect('squawker.app/')
 
+    return render_template('new_message.html.jinja', form=form)
+
+
+@app.route('/edit_profile_test', methods=['GET', 'POST'])
+def edit_profile_test():
+    try:
+        form = EditProfile()
+        logger.info(f"Form values = {form.data}")
+        if request.method == 'POST' and form.validate():
+            conn = Conn()
+            session_data = conn.submit_tprofile((session["email"], form.data), {})
+            for key in session_data['profile']['keys']:
+                logger.info(f"updating session {key} with session_data key {session_data}")
+                session[key] = session_data[key]
+            Account(session['email']).update_profile()
+            return redirect('/')
+        return render_template('edit_profile.html.jinja', form=form)
+    except KeyError:
+        if not session['email']:
+            return redirect('https://squawker.app/login_google')
+        return redirect('https://squawker.app')
+
+@app.route('/market', methods=['GET','POST'])
+def market():
+    form = MarketAsset()
+    logger.info(f"market form data is {form.data['asset']}")
+    if request.method == 'POST' and form.validate():
+        latest_listings = find_latest_flags(form.data["asset"], satoshis=20000000)
+        listings = []
+        for l in latest_listings:
+            try:
+                listings.append(Listing(l).html())
+            except:
+                pass
+        return render_template("market.html.jinja", listings=listings, form=form)
+    else:
+        latest_listings = find_latest_flags("SQUAWKER", satoshis=20000000)
+        listings = []
+        for l in latest_listings:
+            try:
+                listings.append(Listing(l).html())
+            except:
+                pass
+        return render_template("market.html.jinja", listings=listings, form=form)
 

@@ -22,9 +22,5 @@
 {% include "wallet.html.jinja" %}
 {% endblock %}
 {% block rightcolumn %}
-{% if session['address'] %}
-    {% include "full_profile.html.jinja" %}
-{% else %}
-    {% include "login_banner.html.jinja" %}
-{% endif %}
+{% include "sidebar.html.jinja" %}
 {% endblock %}

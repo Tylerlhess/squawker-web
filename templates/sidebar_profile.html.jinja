@@ -1,0 +1,7 @@
+</div class="active_links">
+    <ul>
+        {% for link in user_links %}
+        <li><a href="{{ link['href']|e }}">{{ link['text'] }}</a></li>
+        {% endfor %}
+    </ul>
+</div>

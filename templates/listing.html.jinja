@@ -1,0 +1,39 @@
+{% if form.asset.errors %}
+    <ul class="errors">
+    {% for error in form.asset.errors %}
+        <li>{{ error }}</li>
+    {% endfor %}
+    </ul>
+{% endif %}
+<form method="POST" action="/market">
+    {{ form.csrf_token }}
+    {{ form.asset.label }} {{ form.asset(size=20) }}<br>
+    <input type="submit" value="Update Asset">
+</form>
+
+<div>
+    <table>
+        <tr>
+            {% set headers = ['text', 'sender', 'adType', 'txType', 'txDatas', 'title', 'asset', 'qt', 'orders', 'price','price_asset','link','desc','keywords','channel','sqp2p_ver'] %}
+            {% for header in headers %}
+            <th>{{ header }}</th>
+            {% endfor %}
+        </tr>
+        {% for kaw in listings %}
+            <tr>{{ kaw }}</tr>
+            {% if loop.cycle(False, False, True, False, False)  %}
+                <tr><script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-0684497438635003"
+                     crossorigin="anonymous"></script>
+                <ins class="adsbygoogle"
+                     style="display:block"
+                     data-ad-format="fluid"
+                     data-ad-layout-key="-gh-2h-2s-4o+12g"
+                     data-ad-client="ca-pub-0684497438635003"
+                     data-ad-slot="3857153910"></ins>
+                <script>
+                     (adsbygoogle = window.adsbygoogle || []).push({});
+                </script></tr>
+            {% endif %}
+        {% endfor %}
+    </table>
+</div>
