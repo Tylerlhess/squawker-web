@@ -16,7 +16,7 @@ class tRegister(FlaskForm):
 
 
 class SendKaw(FlaskForm):
-    message = StringField('Kaw', validators=[DataRequired()])
+    kaw = TextAreaField('Kaw', validators=[DataRequired()])
 
 
 class EditProfile(FlaskForm):
@@ -25,6 +25,9 @@ class EditProfile(FlaskForm):
     pgp_pub_key = StringField('PGP_pub_key')
     bio = TextAreaField('Bio')
 
+
+class MarketAsset(FlaskForm):
+    asset = StringField('Asset Channel', validators=[DataRequired()])
 
 
 

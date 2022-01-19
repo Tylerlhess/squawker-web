@@ -1,0 +1,29 @@
+{% if form.asset.errors %}
+    <div class="alert alert-danger">
+    <ul>
+    {% for error in form.asset.errors %}
+        <li>{{ error }}</li>
+    {% endfor %}
+    </ul>
+    </div>
+{% endif %}
+<form method="POST" action="/market">
+    {{ form.csrf_token }}
+    {{ form.asset.label }} {{ form.asset(size=20) }}<br>
+    <input type="submit" value="Update Asset">
+</form>
+
+<div class="card" >
+<div class="table-responsive bg-primary text-white">
+    <table class="table">
+        <tr>
+            {% set headers = ['text', 'sender', 'adType', 'txType', 'txDatas', 'title', 'asset', 'qt', 'orders', 'price','price_asset','link','desc','keywords','channel','sqp2p_ver'] %}
+            {% for header in headers %}
+            <th>{{ header }}</th>
+            {% endfor %}
+        </tr>
+        {% for kaw in listings %}
+            <tr>{{ kaw }}</tr>
+        {% endfor %}
+    </table>
+</div></div>

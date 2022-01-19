@@ -1,0 +1,7 @@
+{% if session['address'] %}
+    {% include "profile.html.jinja" %}
+    {% set user_links = [{"href": site_url+"/new_message", "text": "Kaw Message"},{"href": site_url+"/edit_profile_test", "text": "Kaw Updated Profile"}] %}
+    {% include "sidebar_profile.html.jinja" %}
+{% else %}
+    {% include "login_banner.html.jinja" %}
+{% endif %}

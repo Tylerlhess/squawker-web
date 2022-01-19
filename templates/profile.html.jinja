@@ -1,14 +1,17 @@
-<div class="profile_heading">
-    <table>
+{% if not profile %}
+    {% set profile = {"picture": session["profile_picture"], "name": session["name"], "address": session["address"]} %}
+{% endif %}
+<div class="table text-white bg-secondary">
+    <table class="table">
         <td>
-            <div class="pro_pic_b">
-            <div class="pro_pic"><img src="https://cloudflare-ipfs.com/ipfs/{{ profile["picture"] }}" ></div>
+            <div>
+            <div><img src="https://cloudflare-ipfs.com/ipfs/{{ profile["picture"] }}" class="rounded-circle float-start" alt="" ></div>
             </div>
         </td>
         <td>
-            <div class="pro_data">
-                <div class="pro_name">{{ profile["name"] }}</div>
-                <div class="pro_address">@{{ profile["address"] }}</div>
+            <div class="container">
+                <div class="row">{{ profile["name"]|e }}</div>
+                <div class="row">@{{ profile["address"]|e }}</div>
             </div>
         </td>
     </table>
