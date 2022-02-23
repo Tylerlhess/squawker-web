@@ -1,5 +1,6 @@
 from serverside import *
 import logging
+import inspect
 
 
 logger = logging.getLogger('squawker_utils')
@@ -7,6 +8,9 @@ logger.setLevel(logging.DEBUG)
 handler = logging.FileHandler(filename='squawker_utils.log', encoding='utf-8', mode='a')
 handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s'))
 logger.addHandler(handler)
+handler2 = logging.FileHandler(filename='squawker.log', encoding='utf-8', mode='a')
+handler2.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s'))
+logger.addHandler(handler2)
 
 debug = 0
 
@@ -61,7 +65,10 @@ def find_latest_flags(asset=ASSETNAME, satoshis=100000000, count=50):
 
 
 def transaction_scriptPubKey(tx_id, vout):
-    tx_data = rvn.decoderawtransaction(rvn.gettransaction(tx_id)['result']['hex'])['result']
+    logger.info(f"Entered {inspect.stack()[0][3]} with {tx_id}, {vout}")
+    logger.info(f"get raw transaction is {rvn.getrawtransaction(tx_id)['result']}")
+    tx_data = rvn.decoderawtransaction(rvn.getrawtransaction(tx_id)['result'])['result']
+    logger.info(f" decoded transaction data is {tx_data} looking for vout {vout}")
     issued_scriptPubKey = tx_data['vout'][vout]['scriptPubKey']['hex']
     return issued_scriptPubKey
 
@@ -89,6 +96,7 @@ def make_change(transaction):
     logger.info(f"rvn amount = {rvn_amount}")
     change = utxo_amount - amount_spent
     logger.info(f"change = {change}")
+    logger.info(f"setting rvn output amount to {rvn_amount} ")
     if change:
         transaction['outputs'][TEST_WALLET_ADDRESS] = {"transfer": {asset: change}}
         sendback = rvn.transferfromaddress({"asset": asset, "from_address": TEST_WALLET_ADDRESS, "amount": change, "to_address": address})
@@ -119,28 +127,12 @@ def find_input_value(tx):
     if details['value'] == 0:
         return True, details['scriptPubKey']['asset']['amount']
 
-def find_inputs(address, asset_quantity, current_asset, rvn_quantity=0):
-    if isinstance(rvn_quantity, bool):
-        rvn_quantity = 100000
+def find_inputs(address, asset_quantity, current_asset):
     utxos = rvn.getaddressutxos({"addresses": [address], "assetName": current_asset})['result']
     tx = [txid for txid in utxos if txid['satoshis'] == asset_quantity]
-    if rvn_quantity:
-        rvn_utxos = rvn.getaddressutxos({"addresses": [address]})['result']
-        fund = [txid for txid in rvn_utxos if txid['satoshis'] > rvn_quantity]
     try:
         if len(tx) > 0:
-            if rvn_quantity:
-                if len(fund) > 0:
-                    return [fund[0], tx[0]]
-                else:
-                    funds = 0
-                    while funds < 1000000:
-                        funds += rvn_utxos[0]['satoshis']
-                        fund.append(rvn_utxos[0])
-                        rvn_utxos = rvn_utxos[1:]
-                    return [fund, tx[0]]
-            else:
-                return [tx[0]]
+            return [tx[0]]
         else:
             tx = [txid for txid in utxos if txid['satoshis'] > asset_quantity]
             if len(tx) == 0:
@@ -149,22 +141,11 @@ def find_inputs(address, asset_quantity, current_asset, rvn_quantity=0):
                     txs += utxos[0]['satoshis']
                     tx.append(utxos[0])
                     utxos = utxos[1:]
-            if rvn_quantity:
-                if len(fund) > 0:
-                    return [fund[0], tx[0]]
-                else:
-                    funds = 0
-                    while funds < 1000000:
-                        funds += rvn_utxos[0]['satoshis']
-                        fund.append(rvn_utxos[0])
-                        rvn_utxos = rvn_utxos[1:]
-                    return fund + tx
-            else:
-                return tx
+            return tx
     except IndexError as e:
         for tx in utxos:
             if tx['satoshis'] > 100000000:
-                return [fund, tx]
+                return [tx]
         total, txs = 0, []
         try:
             while total < asset_quantity:
@@ -173,4 +154,4 @@ def find_inputs(address, asset_quantity, current_asset, rvn_quantity=0):
                 txs.append(tx)
         except IndexError:
             raise Exception(f"Ran out of assets {utxos}")
-        return [fund] + txs
+        return txs

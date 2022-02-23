@@ -199,7 +199,6 @@ def edit_profile_test():
                 session[key] = session_data[key]
             Account(session['email']).update_profile(profile_dict=session_data)
             return redirect('/')
-        if not session["profile"]:
 
 
         return render_template('edit_profile.html.jinja', form=form)
@@ -233,3 +232,7 @@ def market():
                 pass
         return render_template("market.html.jinja", listings=listings, form=form)
 
+@app.route('/AET', methods=['GET'])
+def AET():
+    form = AET()
+    return render_template("submit_AET_tag_redemption.html.jinja", form=form)

@@ -88,15 +88,12 @@ class Account():
         else:
             current_asset = self.asset
         inputs = self.find_inputs(asset_quantity, current_asset)
-        # print(inputs[0])
-        # print()
-        # print(inputs[1])
-        # print()
+        logger.info(f"found inputs as {inputs}")
         transaction['inputs'], previous_transaction['inputs'], transaction['outputs'] = [], [], []
         for tx in inputs:
             logger.info(f'{tx}, "redeemScript": {self.multisig_redeem_script}')
             transaction['inputs'].append({"txid": tx['txid'], "vout": tx['outputIndex']})
-            previous_transaction['inputs'].append({"txid": tx['txid'], "vout": tx['outputIndex'], "scriptPubKey": transaction_scriptPubKey(tx['txid'], tx['outputIndex']),  "redeemScript": self.multisig_redeem_script, "amount": 0})
+            previous_transaction['inputs'].append({"txid": tx['txid'], "vout": tx['outputIndex'], "scriptPubKey": transaction_scriptPubKey(tx['txid'], tx['outputIndex']),  "redeemScript": self.multisig_redeem_script, "satoshis": tx['satoshis']})
 
         transaction['outputs'] = {self.p2sh_address: {"transferwithmessage": {current_asset: (asset_quantity/10000000), "message": message_hash, "expire_time": 200000000000}}}
         make_change(transaction)
@@ -104,15 +101,17 @@ class Account():
         logger.info(f"tx inputs {json.dumps(transaction['inputs'], indent=4)}, tx outputs {json.dumps(transaction['outputs'], indent=4)}")
         main_tx = rvn.createrawtransaction(transaction['inputs'], transaction['outputs'])['result']
         logger.info(f"main_tx is {main_tx}")
-        fund_options = {"changeAddress": self.p2sh_address}
+        # rvn_out = [out['n'] for out in rvn.decoderawtransaction(main_tx)['result']['vout'] if out['value'] < 0]
+        fund_options = {"changeAddress": TEST_WALLET_ADDRESS}
         funded_tx = rvn.fundrawtransaction(main_tx, fund_options)
         logger.info(f"funded_tx is {funded_tx}")
         try:
-            txs = [rvn.signrawtransaction(funded_tx, previous_transaction['inputs'], [rvn.dumpprivkey(TEST_WALLET_ADDRESS)['result']])['result']['hex']]
-            logger.info(f"txs starts as {txs}")
+            stxs = rvn.signrawtransaction(json.dumps(main_tx), previous_transaction['inputs'], [rvn.dumpprivkey(TEST_WALLET_ADDRESS)['result']])
+            logger.info(f"txs starts as {stxs}")
         except Exception as e:
             logger.info(f"Error with transaction {type(e)} {e}")
             raise e
+        txs = [stxs["result"]["hex"]]
         # change = make_change(transaction)
         # logger.info(f"change is returned as {change}")
         # for tx in change:
@@ -148,20 +147,9 @@ class Account():
     def find_inputs(self, asset_quantity, current_asset):
         utxos = rvn.getaddressutxos({"addresses": [self.p2sh_address], "assetName": current_asset})['result']
         tx = [txid for txid in utxos if txid['satoshis'] == asset_quantity]
-        rvn_utxos = rvn.getaddressutxos({"addresses": [self.p2sh_address]})['result']
-        fund = [txid for txid in rvn_utxos if txid['satoshis'] > 1000000]
         try:
             if len(tx) > 0:
-                if len(fund) > 0:
-                    return [fund[0], tx[0]]
-                else:
-                    funds = 0
-                    while funds < 1000000:
-                        funds += rvn_utxos[0]['satoshis']
-                        fund.append(rvn_utxos[0])
-                        rvn_utxos = rvn_utxos[1:]
-                    return [fund, tx[0]]
-                # return [tx[0]]
+                return [tx[0]]
             else:
                 tx = [txid for txid in utxos if txid['satoshis'] > asset_quantity]
                 if len(tx) == 0:
@@ -170,20 +158,12 @@ class Account():
                         txs += utxos[0]['satoshis']
                         tx.append(utxos[0])
                         utxos = utxos[1:]
-                if len(fund) > 0:
-                    return [fund[0], tx[0]]
-                else:
-                    funds = 0
-                    while funds < 1000000:
-                        funds += rvn_utxos[0]['satoshis']
-                        fund.append(rvn_utxos[0])
-                        rvn_utxos = rvn_utxos[1:]
-                    return [fund, tx[0]]
-                # return tx
+                return [tx[0]]
+
         except IndexError as e:
             for tx in utxos:
                 if tx['satoshis'] > 100000000:
-                    return [fund, tx]
+                    return [tx]
             total, txs = 0, []
             try:
                 while total < asset_quantity:

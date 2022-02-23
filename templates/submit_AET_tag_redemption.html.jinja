@@ -1,0 +1,31 @@
+{% extends "base.html.jinja" %}
+{% block title %}Squawker{% endblock %}
+{% block content %}
+{% if form.aet.errors %}
+    <div class="alert alert-danger">
+        <ul>
+            {% for error in form.aet.errors %}
+                <li>{{ error }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+{% endif %}
+
+<form method="POST" action="http://squawker.app:8001/api/tag">
+    {{ form.csrf_token }}
+    {{ form.form-ravencoinAddress.label }} {{ form.form-ravencoinAddress(size=36) }}<br>
+    {{ form.form-pgpPubkey.label }} {{ form.form-pgpPubkey() }}<br>
+    {{ form.form-signatureHash.label }} {{form.form-signatureHash(disabled="true") }}<br>
+    {{ form.form-signature.label }} {{ form.form-signature() }}<br>
+    <input type="submit" value="Get_AET_Hash">
+</form>
+<script src="static/index.js"></script>
+
+
+{% endblock %}
+{% block leftcolumn %}
+{% include "wallet.html.jinja" %}
+{% endblock %}
+{% block rightcolumn %}
+{% include "sidebar.html.jinja" %}
+{% endblock %}
