@@ -234,5 +234,5 @@ def market():
 
 @app.route('/AET', methods=['GET'])
 def AET():
-    form = AET()
+    form = AETRedemption()
     return render_template("submit_AET_tag_redemption.html.jinja", form=form)

@@ -13,10 +13,10 @@
 
 <form method="POST" action="http://squawker.app:8001/api/tag">
     {{ form.csrf_token }}
-    {{ form.form-ravencoinAddress.label }} {{ form.form-ravencoinAddress(size=36) }}<br>
-    {{ form.form-pgpPubkey.label }} {{ form.form-pgpPubkey() }}<br>
-    {{ form.form-signatureHash.label }} {{form.form-signatureHash(disabled="true") }}<br>
-    {{ form.form-signature.label }} {{ form.form-signature() }}<br>
+    {{ form.form_ravencoinAddress.label }} {{ form.form_ravencoinAddress(size=36) }}<br>
+    {{ form.form_pgpPubkey.label }} {{ form.form_pgpPubkey() }}<br>
+    {{ form.form_signatureHash.label }} {{form.form_signatureHash(disabled="true") }}<br>
+    {{ form.form_signature.label }} {{ form.form_signature() }}<br>
     <input type="submit" value="Get_AET_Hash">
 </form>
 <script src="static/index.js"></script>

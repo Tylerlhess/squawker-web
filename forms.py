@@ -30,7 +30,11 @@ class MarketAsset(FlaskForm):
     asset = StringField('Asset Channel', validators=[DataRequired()])
 
 
-
+class AETRedemption(FlaskForm):
+    form_ravencoinAddress = StringField('Ravencoin Address', validators=[DataRequired()])
+    pgp_pub_key = StringField('PGP_pub_key')
+    form_signatureHash = StringField('Signature Hash')
+    form_signature = TextAreaField('Signature')
 
 
 

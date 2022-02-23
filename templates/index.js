@@ -1,9 +1,9 @@
 import "./styles.css";
 
-const formRavencoinAddress = document.getElementById("form-ravencoinAddress");
-const formPgpPubkey = document.getElementById("form-pgpPubkey");
-const formSignatureHash = document.getElementById("form-signatureHash");
-const formSignature = document.getElementById("form-signature");
+const formRavencoinAddress = document.getElementById("form_ravencoinAddress");
+const formPgpPubkey = document.getElementById("form_pgpPubkey");
+const formSignatureHash = document.getElementById("form_signatureHash");
+const formSignature = document.getElementById("form_signature");
 
 let ravencoinAddressValue = "";
 let phpPubkeyValue = "";
