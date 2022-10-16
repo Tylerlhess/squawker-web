@@ -1,5 +1,5 @@
-from serverside import *
-from utils import get_logger
+from ServerEssentials.serverside import *
+from Utils.utils import get_logger
 from dbconn import Conn
 
 

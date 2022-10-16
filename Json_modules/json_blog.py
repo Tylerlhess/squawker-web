@@ -1,7 +1,7 @@
 from json_profile import Profile
 from json_message import Message
-import squawker_errors
-from utils import get_logger
+from Utils import squawker_errors
+from Utils.utils import get_logger
 import datetime
 from dbconn import Conn
 

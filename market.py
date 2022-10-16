@@ -1,7 +1,6 @@
-from serverside import *
-from profile import Profile
+from ServerEssentials.serverside import *
 import json
-import squawker_errors
+from Utils import squawker_errors
 import logging
 
 logger = logging.getLogger('squawker_market')

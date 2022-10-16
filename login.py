@@ -1,5 +1,5 @@
 from requests_oauthlib import OAuth2Session
-from credentials1 import GOOGLE_OAUTH2_CLIENTID, GOOGLE_OAUTH2_SECRET
+from ServerEssentials.credentials1 import GOOGLE_OAUTH2_CLIENTID, GOOGLE_OAUTH2_SECRET
 
 # Credentials you get from registering a new application
 client_id = GOOGLE_OAUTH2_CLIENTID

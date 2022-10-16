@@ -1,7 +1,5 @@
-from serverside import *
 import json
-import squawker_errors
-from utils import get_logger
+from Utils.utils import get_logger
 from json_profile import Profile
 from dbconn import Conn
 

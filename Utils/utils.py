@@ -1,4 +1,4 @@
-from serverside import *
+from ServerEssentials.serverside import *
 import logging
 import inspect
 from bip39 import BIP39WORDLIST

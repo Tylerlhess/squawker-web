@@ -1,8 +1,7 @@
-from utils import tx_to_self, find_latest_flags
-from serverside import *
-import squawker_errors
+from Utils.utils import tx_to_self, find_latest_flags
+from ServerEssentials.serverside import *
+from Utils import squawker_errors
 import json
-from dbconn import Conn
 from ipfshttpclient import exceptions as ipfs_exceptions
 import logging
 import requests

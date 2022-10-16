@@ -1,9 +1,8 @@
-import squawker_errors
+from Utils import squawker_errors
 from account import Account
 from message import Message
-import json
-from utils import tx_to_self
-from serverside import *
+from Utils.utils import tx_to_self
+from ServerEssentials.serverside import *
 
 debug = 0
 
@@ -130,7 +129,7 @@ def process_choices(func, msg=None):
 
 
 if __name__ == "__main__":
-    usr = Account("config.json", ASSETNAME, rvn, ipfs)
+    usr = Account("../config.json", ASSETNAME, rvn, ipfs)
     while True:
         intent = input("Kaw (1) | Read (2) | Read XML (3) | Update Profile (4) | Exit (5)")
         if str(intent).strip() == "1":

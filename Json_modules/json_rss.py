@@ -1,6 +1,5 @@
 from json_profile import Profile
-from json_message import Message
-from utils import get_logger
+from Utils.utils import get_logger
 from dbconn import Conn
 from xml.sax.saxutils import escape
 from email.utils import formatdate

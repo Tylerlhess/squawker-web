@@ -1,12 +1,9 @@
 import time
 import json
 from dbconn import Conn
-from serverside import *
-from PyJSON import PyJSON
-from utils import transaction_scriptPubKey, make_change
-import logging
-from transaction_editor import modify_transaction
-from squawker_errors import *
+from ServerEssentials.serverside import *
+from Utils.utils import transaction_scriptPubKey, make_change
+from Utils.squawker_errors import *
 
 logger = logging.getLogger('squawker_account')
 logger.setLevel(logging.DEBUG)

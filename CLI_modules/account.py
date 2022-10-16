@@ -75,7 +75,7 @@ class Account:
             hash = self.ipfs.add(filename)['Hash']
             raw_pin = filename
         self.config["profile_hash"] = hash
-        with open("config.json", 'w') as cf:
+        with open("../config.json", 'w') as cf:
             json.dump(self.config, cf)
         if raw:
             return self.build_raw_tx(hash, 50000000), raw_pin, hash

@@ -1,9 +1,9 @@
-from serverside import *
+from ServerEssentials.serverside import *
 from profile import Profile
 import json
-import squawker_errors
+from Utils import squawker_errors
 import requests
-from utils import get_logger
+from Utils.utils import get_logger
 
 logger = get_logger("messages")
 

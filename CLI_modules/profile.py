@@ -1,6 +1,6 @@
-from utils import tx_to_self
-from serverside import *
-import squawker_errors
+from Utils.utils import tx_to_self
+from ServerEssentials.serverside import *
+from Utils import squawker_errors
 import json
 import requests, logging
 

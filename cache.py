@@ -1,5 +1,3 @@
-from serverside import *
-from dbconn import Conn
 import sys
 
 block = sys.argv[1]
