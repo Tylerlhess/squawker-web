@@ -12,13 +12,13 @@ jobs:
       - checkout
       -
       - run:
-          command: |
-            pip install -r requirements/requirements.txt
-            python app.py
+          command:
+            - pip install -r requirements/requirements.txt
+            - python app.py
 
 # Invoke jobs via workflows
 # See: https://circleci.com/docs/2.0/configuration-reference/#workflows
 workflows:
-  say-hello-workflow:
+  main:
     jobs:
       - build
