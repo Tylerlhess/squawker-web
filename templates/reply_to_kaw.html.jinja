@@ -1,0 +1,128 @@
+{% extends "base.html.jinja" %}
+{% block title %}Squawker{% endblock %}
+{% block content %}
+
+
+<div class="h3">Reply to </div><br>
+{% include "kaw.html.jinja" %}
+<br>
+
+<form method="POST" action="{{ url_for('index') }}api/proxy">
+    {{ form.csrf_token }}
+    {{ form.address.label }} <br />
+    {{ form.address(style="width: 100%") }} <br />
+    {{ form.kaw.label }}<br />
+    {{ form.kaw(type="text", style="width: 100%", rows=6) }}<br>
+    {{ form.reply_to_txid.label }}<br />
+    {{ form.reply_to_txid(style="width: 100%", readonly='true', value=messages[0]["txid"]) }}<br />
+    {{ form.reply_to_url.label }}<br />
+    {{ form.reply_to_url(style="width: 100%", readonly='true') }}<br />
+    {{ form.media.label }}<br> {{ form.media(readonly='true') }}<br>
+    {{ form.jsonString(hidden='true') }}
+    {{ form.signature_hash.label }}<br /> {{ form.signature_hash(style="width: 100%") }}<br />
+    {{ form.signature.label }}<br /> {{ form.signature(style="width: 100%") }}<br />
+
+</form>
+<button id="kaw_btn"> Reply!</button><button id="send_signed" disabled> Send Signed Reply!</button>
+
+<script type="text/javascript">
+document.getElementById('kaw').addEventListener("change",sha256);
+document.getElementById('signature').addEventListener("change",update_json);
+
+{% if session["address"] %}
+var addr = document.getElementById('address');
+addr.value = "{{ session["address"].split("value=")[1].split('"')[1] }}";
+addr.readOnly = true;
+{% endif %}
+
+
+async function sha256() {
+  var field1 = document.getElementById('address').value;
+  var field2 = document.getElementById('kaw').value.replace(/\n/g, "\\n");
+  var field3 = document.getElementById('reply_to_txid').value;
+  var field4 = document.getElementById('reply_to_url').value;
+
+    if(field1 != "" && field2 != ""){
+      var jsonString = '{"sender": "' + field1 + '", "message": "' + field2 + '", "reply_to_txid": "' + field3 + '", "reply_to_url": "' + field4 + '", "media": [] }';
+
+      document.getElementById('jsonString').value = jsonString;
+      console.log(jsonString);
+    }
+}
+
+function update_json() {
+  var field1 = document.getElementById('kaw');
+  var obj = JSON.parse(field1.value);
+  var metadata = JSON.parse(obj.metadata_signature);
+  var sig = document.getElementById('signature').value;
+  console.log(sig);
+  metadata["signature"] = sig;
+  console.log(metadata);
+  obj.metadata_signature = JSON.stringify(metadata);
+  console.log(obj);
+  field1.readonly = false;
+  field1.value = JSON.stringify(obj);
+  field1.readonly = true ;
+}
+
+
+
+kaw_btn.onclick = async (e) => {
+        sha256();
+            let response = await fetch("{{ base_url }}/api/proxy_sign", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(document.getElementById('jsonString').value)
+        })
+
+        let text = await response.text(); // read response body as text
+<!--        alert(text);-->
+        console.log(text);
+        var content = document.getElementById('kaw')
+        content.value = text.toString();
+<!--        // make kaw field read only-->
+        content.readOnly = true;
+<!--        // display json returned as text in content field-->
+        var obj = JSON.parse(text)
+        content.value = JSON.stringify(obj);
+<!--        // fill in/display signature hash field-->
+        let hash = document.getElementById('signature_hash');
+        hash.style.visibility = 'visible';
+        hash.value = JSON.parse(obj["metadata_signature"]).signature_hash;
+<!--        // unhide signature field-->
+        var sig = document.getElementById('signature')
+<!--        sig.style.visibility = 'visible';-->
+<!--        sig.readonly = false;-->
+        document.getElementById('send_signed').disabled = false;
+    };
+
+send_signed.onclick = async (e) => {
+        update_json();
+        console.log(JSON.stringify(document.getElementById('kaw').value))
+        let response = await fetch('{{ base_url }}/api/proxy/reply', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(document.getElementById('kaw').value)
+        })
+
+        let text = await response.text(); // read response body as text
+        var obj = JSON.parse(text);
+        if (obj.sent) {
+          window.location.href = obj.location;
+        } else { alert(obj.error); }
+    };
+
+</script>
+
+
+{% endblock %}
+{% block leftcolumn %}
+{% include "sidebar.html.jinja" %}
+{% endblock %}
+{% block rightcolumn %}
+{% include "wallet.html.jinja" %}
+{% endblock %}

@@ -1,0 +1,47 @@
+<div>
+    {% for article in articles %}
+    <div class="article">
+        {% set profile = article["profile"] %}
+        {% include "profile.html.jinja"  %}
+        <div class="article_header">
+            <table>
+                <tr>
+                    <td><div class="support" style="width: 18% align: center">Show Support RVN {{ article["support"] }}</div></td>
+                </tr>
+                <tr>
+                    <td><div class="header_date" style="align: left">Published {{ article["date"] }}</div></td>
+                </tr>
+                <tr>
+                    <td><div class="article_title" style="width: 75% align: center"><h1>{{ article["title"] }}</h1></div></td>
+                    <td><div class="version text-right" style="width: 7% align: right">v{{ article["version"] }}</div></td>
+                </tr>
+            </table>
+        </div>
+        <div class="article_text">
+        <span  style="white-space: pre-wrap">{{ article["text"] }}</span>
+        </div><br />
+            {% if article["reply"]|length < 1 %}
+                Article has no replies yet.
+            {% elif article["reply"]|length == 1 %}
+                Article has {{ article["reply"]|length }} reply.
+            {% elif article["reply"]|length > 1 %}
+                Article has {{ article["reply"]|length }} replies.
+            {% endif%}
+
+        <div><a href="{{ base_url }}/article/{{ article['link'] }}">Full Article Link </a></div><br />
+    </div>
+        {% if loop.cycle(False, False, True, False, False)  %}
+            <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-0684497438635003"
+                 crossorigin="anonymous"></script>
+            <ins class="adsbygoogle"
+                 style="display:block"
+                 data-ad-format="fluid"
+                 data-ad-layout-key="-gh-2h-2s-4o+12g"
+                 data-ad-client="ca-pub-0684497438635003"
+                 data-ad-slot="3857153910"></ins>
+            <script>
+                 (adsbygoogle = window.adsbygoogle || []).push({});
+            </script>
+        {% endif %}
+    {% endfor %}
+</div>

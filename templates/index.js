@@ -1,39 +1,31 @@
-import "./styles.css";
+document.getElementById('formRavencoinAddress').addEventListener("change",sha256);
+document.getElementById('formPgpPubkey').addEventListener("change",sha256);
+document.getElementById('formSignature').addEventListener("change",sha256);
 
-const formRavencoinAddress = document.getElementById("form_ravencoinAddress");
-const formPgpPubkey = document.getElementById("form_pgpPubkey");
-const formSignatureHash = document.getElementById("form_signatureHash");
-const formSignature = document.getElementById("form_signature");
 
-let ravencoinAddressValue = "";
-let phpPubkeyValue = "";
+async function sha256() {
+  var field1 = document.getElementById('formRavencoinAddress').value;
+  var field2 = document.getElementById('formPgpPubkey').value;
+  var signature = document.getElementById('formSignature').value;
+    if(field1 != "" && field2 != ""){
+      var jsonString = '"tag_type": "AET","ravencoin_address": "'+field1+'","pgp_pubkey": "'+field2+'"';
 
-formRavencoinAddress.addEventListener("input", (event) => {
-  console.log(event.target.value.trim());
-  ravencoinAddressValue = event.target.value.trim();
-  createSignatureHash();
-});
+      document.getElementById('jsonString').value = jsonString;
+      console.log(jsonString);
+      // encode as UTF-8
+      const msgBuffer = new TextEncoder('utf-8').encode(jsonString);
 
-formPgpPubkey.addEventListener("input", (event) => {
-  console.log(event.target.value.trim());
-  phpPubkeyValue = event.target.value.trim();
-  createSignatureHash();
-});
+      // hash the message
+      const hashBuffer = await window.crypto.subtle.digest('SHA-256', msgBuffer);
 
-async function digestMessage(message) {
-  const msgUint8 = new TextEncoder().encode(message);                           // encode as (utf-8) Uint8Array
-  const hashBuffer = await crypto.subtle.digest('SHA-256', msgUint8);           // hash the message
-  const hashArray = Array.from(new Uint8Array(hashBuffer));                     // convert buffer to byte array
-  const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join(''); // convert bytes to hex string
-  return hashHex;
-}
+      // convert ArrayBuffer to Array
+      const hashArray = Array.from(new Uint8Array(hashBuffer));
 
-function createSignatureHash() {
-  // Do the hash creation
-  console.log("ravencoinAddressValue", ravencoinAddressValue);
-  console.log("phpPubkeyValue", phpPubkeyValue);
-  const hashCalc = `"tag_type": "AET", "ravencoin_address": "${ravencoinAddressValue}", "pgp_pubkey": "${phpPubkeyValue}"`;
+      // convert bytes to hex string
+      const hashHex = hashArray.map(b => ('00' + b.toString(16)).slice(-2)).join('');
+      console.log(hashHex);
+      document.getElementById('sha256').value = hashHex;
 
-  digestMessage(hashCalc).then(digestHex => formSignatureHash.value = digestHex);
-
+      document.getElementById('fullJson').value = "{\"tag\": {\"tag_type\": \"AET,\"ravencoin_address\": \""+field1+"\",\"pgp_pubkey\": \""+field2+"\"},\"metadata_signature\": {\"signature_hash\": \""+hashHex+"\",\"signature\": \""+signature+"\"}}";
+    }
 }

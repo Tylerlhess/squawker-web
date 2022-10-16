@@ -1,0 +1,123 @@
+<div class="modal-body">
+<form id="article_form" method="POST" action="{{ url_for('index') }}api/proxy">
+    {{ articleForm.csrf_token }}
+    {{ articleForm.address.label }} <br />
+    {{ articleForm.address(style="width: 100%") }} <br />
+    {{ articleForm.support_address.label }} <br />
+    {{ articleForm.support_address(style="width: 100%") }} <br />
+    {{ articleForm.article_title.label }}<br />
+    {{ articleForm.article_title(style="width: 100%", rows=6) }}<br />
+    {{ articleForm.article_version.label }}<br />
+    {{ articleForm.article_version(style="width: 100%", rows=6) }}<br />
+    {{ articleForm.article.label }}<br />
+    {{ articleForm.article(type="text", style="width: 100%", rows=6) }}<br />
+    {{ articleForm.media.label }}<br /> {{ articleForm.media(readonly='true') }}<br />
+    {{ articleForm.jsonString(hidden='true') }}
+    {{ articleForm.signature_hash.label }}<br /> {{ articleForm.signature_hash(style="width: 100%") }}<br />
+    {{ articleForm.signature.label }}<br /> {{ articleForm.signature(style="width: 100%") }}<br />
+
+</form>
+</div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-dark" id="publish"> Prepare Article</button>
+        <button type="button" class="btn btn-dark" id="send_signed" disabled> Publish Article</button>
+</div>
+
+<script type="text/javascript">
+document.getElementById('signature').addEventListener("change",update_json);
+
+{% if session["address"] %}
+var addr = document.getElementById('address');
+addr.value = "{{ session["address"].split("value=")[1].split('"')[1] }}";
+addr.readOnly = true;
+{% endif %}
+
+
+async function sha256() {
+  var field1 = document.getElementById('address').value;
+  var field2 = document.getElementById('kaw').value.replace(/\n/g, "\\n");
+
+    if(field1 != "" && field2 != ""){
+      var jsonString = '{"sender": "' + field1 + '", "message": "' + field2 + '", "media": [] }';
+
+      document.getElementById('jsonString').value = jsonString;
+      console.log(jsonString);
+    }
+}
+
+function update_json() {
+  const form = document.getElementById('article_form');
+  const fd = new FormData();
+  const props = {};
+  for (let element of form.elements) {
+    if (element.type !== "submit") {
+      if (['jsonString', 'extraFields', 'csrf_token', 'signature', 'signature_hash'].indexOf(element.name) < 0) {
+        props[element.name] = element.value;
+        fd.append(element.name, element.value);
+      }
+    }
+  }
+  const json = document.getElementById('jsonString');
+  json.value = JSON.stringify(props);
+}
+
+function sign_json() {
+  var field1 = document.getElementById('article');
+  var obj = JSON.parse(field1.value);
+  var metadata = JSON.parse(obj.metadata_signature);
+  var sig = document.getElementById('signature').value;
+  console.log(sig);
+  metadata["signature"] = sig;
+  console.log(metadata);
+  obj.metadata_signature = JSON.stringify(metadata);
+  console.log(obj);
+  field1.readonly = false;
+  field1.value = JSON.stringify(obj);
+  field1.readonly = true ;
+}
+
+
+
+publish.onclick = async (e) => {
+        update_json();
+            let response = await fetch("{{ base_url }}/api/proxy_sign", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(document.getElementById('jsonString').value)
+        })
+
+        let text = await response.text(); // read response body as text
+        console.log(text);
+        var content = document.getElementById('article')
+        content.value = text.toString();
+        content.readOnly = true;
+        var obj = JSON.parse(text)
+        content.value = JSON.stringify(obj);
+        let hash = document.getElementById('signature_hash');
+        hash.style.visibility = 'visible';
+        hash.value = JSON.parse(obj["metadata_signature"]).signature_hash;
+        var sig = document.getElementById('signature')
+        document.getElementById('send_signed').disabled = false;
+    };
+
+send_signed.onclick = async (e) => {
+        sign_json();
+        console.log(JSON.stringify(document.getElementById('article').value))
+        let response = await fetch('{{ base_url }}/api/proxy/publish', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(document.getElementById('article').value)
+        })
+
+        let text = await response.text(); // read response body as text
+        var obj = JSON.parse(text);
+        if (obj.sent) {
+          window.location.href = obj.location;
+        } else { alert(obj.error); }
+    };
+
+</script>

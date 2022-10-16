@@ -1,0 +1,16 @@
+{% extends "base.html.jinja" %}
+{% block title %}Squawker{% endblock %}
+{% block leftcolumn %}
+{% include "sidebar.html.jinja" %}
+{% endblock %}
+{% block content %}
+<div class="text-center"> Your Transaction ID is </div><br />
+<div class="h5 text-center" >{{ txid }}</div><br>
+<div class="text-center">To tag a user/address send 0.01 Squawker Tokens to their address with this TXID in the message field.<br>
+To tag your transaction a topic send 0.01 Squawker Tokens to the tags address with this TXID in the message field.<br>
+Topic creation has not been implimented yet.<br>
+Squawker Tokens can be obtained currently at <a href="https://www.ravenist.com/badguyty-039-s-collection/4448">ravenist.com</a> but there are plans to eventually offer them directly from Squawker for 0.01 RVN per 1 Squawker Token</div>
+{% endblock %}
+{% block rightcolumn %}
+{% include "wallet.html.jinja" %}
+{% endblock %}

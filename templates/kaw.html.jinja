@@ -1,24 +1,42 @@
 <div>
+    {% if replies %}
+        {% set messages = replies %}
+        {% set replies = None %}
+        {% set reply_txid = Noine %}
+    {% endif %}
     {% for kaw in messages %}
-    <div class="kaw">
+    <div class="card mt-3 rounded bg-black shadow p-1">
+        <div class="card-head bg-primary rounded-top p-1">
+
         {% set profile = kaw["profile"] %}
         {% include "profile.html.jinja"  %}
-        <div class="kaw_text">
+        </div>
+        <div class="card-body bg-dark text-white-50 px-5">
         <p>{{ kaw["text"] }}</p>
+        </div>
+        <div class="card-footer bg-primary rounded-bottom">
+            {% if not reply_txid %}
+                {% set reply_txid = kaw["txid"] %}
+                {% include "responses.html.jinja" %}
+                {% if kaw["reply"]|length > 0 %}
+                    {% set replies = kaw["reply"] %}
+                    {% include "kaw.html.jinja" %}
+                {% endif%}
+            {% endif %}
         </div>
     </div>
         {% if loop.cycle(False, False, True, False, False)  %}
             <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-0684497438635003"
-                 crossorigin="anonymous"></script>
-            <ins class="adsbygoogle"
-                 style="display:block"
-                 data-ad-format="fluid"
-                 data-ad-layout-key="-gh-2h-2s-4o+12g"
-                 data-ad-client="ca-pub-0684497438635003"
-                 data-ad-slot="3857153910"></ins>
-            <script>
-                 (adsbygoogle = window.adsbygoogle || []).push({});
-            </script>
+     crossorigin="anonymous"></script>
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-format="fluid"
+     data-ad-layout-key="-gh-2h-2s-4o+12g"
+     data-ad-client="ca-pub-0684497438635003"
+     data-ad-slot="3857153910"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
         {% endif %}
     {% endfor %}
 </div>

@@ -1,0 +1,53 @@
+<div class="modal-body">
+<form method="POST" action="{{ url_for('login') }}">
+   <h1>Sign in</h1>
+    <div align="right">
+{{ loginForm.csrf_token }}
+   {{ loginForm.signstring.label }} {{ loginForm.signstring(style="width: 75%", value=session["signstring"]) }}
+    <br />
+
+{{ loginForm.address.label }} {{ loginForm.address(style="width: 75%") }}   <br />
+
+{{ loginForm.signature.label }} {{ loginForm.signature(style="width: 75%", rows=6) }}<br>
+    </div>
+
+
+</form>
+</div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-dark" id="send_login" disabled>Send Signed Update</button>
+</div>
+<script>
+
+
+
+ nft_btn.onclick = async (e) => {
+        var data = { "nft": document.getElementById('nft').value};
+        var url = new URL('{{ base_url }}/api/nft_lookup' }});
+        for (let k in data) { url.searchParams.append(k, data[k]); }
+        let text = await fetch(url);
+        console.log(text);
+        var address_box = document.getElementById('address');
+        let key = await text.text();
+        address_box.value = key.toString().substring(2, 36);
+  }
+
+ send_login.onclick = async (e) => {
+        update_json();
+        console.log(JSON.stringify(document.getElementById('kaw').value))
+        let response = await fetch('{{ base_url }}/api/verify_sig', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(document.getElementById('kaw').value)
+        })
+
+        let text = await response.text(); // read response body as text
+        var obj = JSON.parse(text);
+        if (obj.sent) {
+          window.location.href = obj.location;
+        } else { alert(obj.error); }
+    };
+
+</script>

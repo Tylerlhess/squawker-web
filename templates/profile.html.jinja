@@ -1,18 +1,26 @@
 {% if not profile %}
     {% set profile = {"picture": session["profile_picture"], "name": session["name"], "address": session["address"]} %}
 {% endif %}
-<div class="table text-white bg-secondary">
-    <table class="table">
-        <td>
-            <div>
-            <div><img src="https://cloudflare-ipfs.com/ipfs/{{ profile["picture"] }}" class="rounded-circle float-start" alt="" ></div>
-            </div>
-        </td>
-        <td>
-            <div class="container">
-                <div class="row">{{ profile["name"]|e }}</div>
-                <div class="row">@{{ profile["address"]|e }}</div>
-            </div>
-        </td>
+<div class="table-responsive-lg text-black bg-primary">
+    <table class="table-boarderless bd-primary">
+        <tr >
+            <td>
+                <div>
+                <div>
+                    <img src="https://cloudflare-ipfs.com/ipfs/{{ profile['picture'] }}" class="rounded-circle float-start" alt="" width="64" height="64" object-fit="cover" >
+                </div>
+                <div class="text-center justify-center align-middle font-weight-bold">
+                        {{ profile["name"]|e }}
+                </div>
+                </div>
+            </td>
+        </tr>
+        <tr >
+            <td>
+                <div class="fluid-container text-center bg-primary">
+                        @{{ profile["address"]|e }}
+                </div>
+            </td>
+        </tr>
     </table>
 </div>

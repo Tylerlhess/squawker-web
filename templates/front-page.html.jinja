@@ -1,0 +1,145 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="static/squawker.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <style type="text/css">
+        .jumbotron {
+  color: white;
+  background-image: url("/static/heroImage.jpg");
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  height: 100vh;
+}
+    </style>
+<title>{% block title %}{% endblock %}</title>
+{% set site_url = "https://squawker.app" %}
+</head>
+<body>
+<div class="jumbotron jumbotron-fluid" >
+  <div class="container-fluid text-black bg-white text-center">
+  <div>
+    {%  include "header.html.jinja" %}
+  </div>
+  <div class="container-fluid" >
+    <div class="row">
+  <div class="container text-black sm-4">
+    <h1 class="display-4">Squawker</h1>
+    <p class="text-large">Your life, your content&mdash;own it.</p>
+  </div>
+        <div class="container-fluid">
+
+<div class="container-fluid bg-primary text-black ">
+    <div class="container-fluid text-center col-sm-8 align-center p-5">
+<h5>
+Use the blockchain for what you actually need. Squawker is a platform where you can build your digital life, share your content, and get rewarded by your supporters. There are no 30% fees for content distribution. You keep it all, or you pay one among many competitors to manage the digital distribution portion which is perfectly auditable and immutable. It’s your life, your content, so own it.
+</h5>
+    </div>
+    <div class="row bg-secondary p-3 align-center">
+
+    <div class="container-fluid col-sm-4 p-5">
+
+<h3 class="text-center bg-accent1 rounded">
+
+
+Sales
+</h3>
+<p>
+
+Atomic Swaps are available on the Ravencoin blockchain. You can flag these transactions on the blockchain so anyone can fill the input and sign the whole thing. You just have to sign your half of the transaction and submit it to the blockchain. When transaction goes through the deal is done.
+</p>
+    </div>
+       <div class="container-fluid col-sm-8 p-5">
+
+<h3 class="text-center bg-accent1 rounded">
+Content distribution
+</h3>
+<p>
+If you wish to publish a book, music, or even a movie, how do you sell it digitally without fear of anyone just copying it? If you put it on IPFS anyone can download and consume it. By providing your content’s encryption key securely to the purchaser inside a receipt when sending someone the digital representation of that content.
+
+    Using PGP encryption and Ravencoin Improvement Proposal 11 (RIP11) to define, build, and sign a unique asset to an address. A public PGP key can be used to verify a signature by the address meaning a private key message encrypted with that public key. The great part of this is that if you require a signature of the address decrypting the key, you can verify the  y actually still have that asset–using the blockchain–thus are allowed access to the content.
+</p>
+        </div>
+
+        </div>
+        <div class="row bg-accent3 p-3 align-center ">
+            <div class="container-fluid col-sm-7 p-5">
+                 <div class="text-center bg-accent2 rounded">
+           <h3 class="text-center bg-accent2 rounded">
+                                Website subscriptions
+                            </h3>
+                 </div>
+ <p>
+The Squawker API can be used to validate an addresses ownership of a token. You can sell website subscriptions using a marketplace or through your own site. These subscriptions would simply be assets stored in your wallet. With a signature as authentication, you don’t need to track your users’ information.You can tell they have purchased access directly from you. You can see when the access was purchased, and that it is still within the subscription window. With the content decryption, you could even sell varying levels of access to your site and have areas that need to have the full paid version for the in-depth news articles. All this without the need for trackers, email addresses or even names. Your address is your user, your signature is your password. The best part is there are no chargebacks or auto-renewal hassels. You know the money is there when they purchase. As a provider of digital content, why not accept payment directly in a digital currency?
+</p>
+                    </div>
+    <div class="container-fluid col-sm-5 p-5">
+
+<h3 class="text-center bg-accent2 rounded">Auctions</h3>
+<p>
+
+Atomic swaps can be used to purchase a specific NFT you want to buy. If you put it out there, whoever has that NFT or can
+    obtain it, can sell the NFT to you by signing the transaction. This means you can place a bid on the NFT. The bid is
+    public and can be signed and transacted at any point. The great part of this is if you wish to retract your bid you
+    just have to move the funds, so the transaction becomes invalid. If for some reason a bid falls through, the seller
+    can sign any of the previous transactions to collect on the bid. Or if you have buyer’s remorse, you can sell that
+    NFT to any of the previous bids still open.
+</p>
+    </div>
+        </div>
+
+
+</div>
+            </div>
+
+
+    </div>
+            <div class="col-sm-1"></div>
+            <div class="col-sm-4 p-5" >
+          <h2 class="text-center">What</h2>
+                <p>
+                    Squawker is a decentralized flagging protocol on the Ravencoin blockchain. What started out as a messaging protocol, Squawker’s potential quickly became apparent. Using flags, you can leave instructions on the blockchain on how to treat the IPFS message attached to that flag.
+                </p>
+            </div>
+
+          <div class="contianer-fluid bg-primary text-large text-black ">
+              <div class="col-sm-6 text-right p-5">
+
+                  <h2 class="text-center">How</h2>
+                      <p>
+                            To understand a flag, you need to understand a transaction. There are five major parts of a transaction on the Ravencoin Blockchain. You have the sender, the receiver, the asset, the amount, and the IPFS message. By changing the sender, the recipient, and the amount we can define what this flag means. The IPFS (Interplanetary File System) message is what we are flagging as having meaning. We could send a message, video, soundbyte, or anything else inside the flagged message. All we have to know is what to look for and how to process it. The solution to the first is to follow a chosen asset’s transactions. It is foolish to send an asset to yourself. You are just wasting the gas fee, right? That's why Squawker chose this path. So that is called a flag. Detecting a planted a flag on the blockchain is trivial especially if you are only looking for transactions on a certain asset.
+                      </p>
+              </div>
+          </div>
+
+          <div class="bg-accent1 text-black">
+              <div class="container-fluid col-sm-6 align-center p-5">
+
+                  <h2 class="text-center">
+                      Why
+                  </h2>
+                  <p>
+                      You can flag something on the blockchain, so what? A blockchain is consistent regardless of where you are in the world. A blockchain is immutable, permanent, and if it is proof of work, uncensorable. The greed of miners causes them to accept whatever transactions they can get into a block and the next miner is going to sign off on that block for the same reason. So you suddenly have a way to leave a message to anyone on the internet who has access to IPFS and the blockchain. This means no one can take down your content. No one can censor you. Now that doesn’t mean that people have to listen to you which is how Squawker the website will handle moderation. We will choose to not display the extralegal content. It will still be there on the blockchain for anyone to get access to as long as it has an IPFS pin.
+                  </p>
+        Squawker was born in the midst of cancel culture. This divisive movement destroyed countless lives and deplatformed many more. The loss of one’s platform or of one’s voice is, to me, a violation of freedom of speech. Squawker protocol defends against this. While one community may choose to stop listening, you still have your voice regardless.
+              </div>
+            </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+  <div class="container-fluid p-5 text-right">
+    {% include "footer.html.jinja" %}
+  </div>
+</div>
+<script type="text/js"> $(".jumbotron").css({ height: $(window).height() + "px" });
+
+$(window).on("resize", function() {
+  $(".jumbotron").css({ height: $(window).height() + "px" });
+});</script>
+</body>
+</html>

@@ -1,0 +1,37 @@
+{% extends "base.html.jinja" %}
+{% block title %}Squawker{% endblock %}
+{% block leftcolumn %}
+{% include "sidebar.html.jinja" %}
+{% endblock %}
+{% block content %}
+<div class="article">
+        {% set profile = article["profile"] %}
+        {% include "profile.html.jinja"  %}
+        <table>
+                <tr>
+                    <td><div class="support" style="width: 18% align: center">Show Support RVN {{ article["support"] }}</div></td>
+                </tr>
+                <tr>
+                    <td><div class="header_date" style="align: left">Published {{ article["date"] }}</div></td>
+                </tr>
+                <tr>
+                    <td><div class="article_title" style="width: 75% align: center"><h1>{{ article["title"] }}</h1></div></td>
+                    <td><div class="version" style="width: 7% align: right">v{{ article["version"] }}</div></td>
+                </tr>
+            </table>
+        <div class="article_text" style="white-space: pre-wrap">
+        <p>{{ article["text"] }}</p>
+        </div><br /><br />
+            {% set reply_txid = article["txid"] %}
+            {% include "responses.html.jinja" %}
+            {% if article["reply"]|length > 0 %}
+                {% set replies = article["reply"] %}
+                {% include "kaw.html.jinja" %}
+            {% endif%}
+
+        <div><a href="{{ base_url }}/article/{{ article['link'] }}">Full Article Link </a></div>
+    </div>
+{% endblock %}
+{% block rightcolumn %}
+{% include "wallet.html.jinja" %}
+{% endblock %}

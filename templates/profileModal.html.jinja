@@ -1,30 +1,28 @@
-{% extends "base.html.jinja" %}
-{% block title %}Squawker{% endblock %}
-{% block content %}
-<div align="right">
-
+<div class="modal-body">
 <form id="profile_form" method="POST" action="{{ base_url }}/edit_profile">
-    {{ form.csrf_token }}
-    {{ form.jsonString(hidden='true') }}
-    {{ form.address.label }}
+    {{ profile_form.csrf_token }}
+    {{ profile_form.jsonString(hidden='true') }}
+    {{ profile_form.address.label }}
     {%- if session["address"] -%}
     {{ session["address"] }} <br />
     {% else %}
-    {{ form.address(style="width: 75%") }} <br />
+    {{ profile_form.address(style="width: 75%") }} <br />
     {%- endif -%}
-    {{ form.name.label }} {{ form.name(style="width: 75%") }}<br>
-    {{ form.profile_picture.label }} {{ form.profile_picture(style="width: 75%") }}<br>
-    {{ form.aet.label }} {{ form.aet(style="width: 75%") }}<br>
-    {{ form.bio.label }} {{ form.bio(type="text", style="width: 75%", rows=6, wrap=true) }}<br>
-    {{ form.extraFields(hidden=true) }}
-    {{ form.signature_hash.label }} {{ form.signature_hash(style="width: 75%") }}<br/>
-    {{ form.signature.label }} {{ form.signature(style="width: 75%") }}<br/>
+    {{ profile_form.name.label }} {{ profile_form.name(style="width: 75%") }}<br>
+    {{ profile_form.profile_picture.label }} {{ profile_form.profile_picture(style="width: 75%") }}<br>
+    {{ profile_form.aet.label }} {{ profile_form.aet(style="width: 75%") }}<br>
+    {{ profile_form.bio.label }} {{ profile_form.bio(type="text", style="width: 75%", rows=6, wrap=true) }}<br>
+    {{ profile_form.extraFields(hidden=true) }}
+    {{ profile_form.signature_hash.label }} {{ profile_form.signature_hash(style="width: 75%") }}<br/>
+    {{ profile_form.signature.label }} {{ profile_form.signature(style="width: 75%") }}<br/>
 
 </form>
 
 </div>
-<button id="prep_btn">Prepare Update</button><button id="send_signed" disabled> Send Signed Profile Update</button>
-
+      <div class="modal-footer">
+        <button type="button" class="btn btn-dark" id="prep-btn">Prepare Update</button>
+        <button type="button" class="btn btn-dark" id="pro_send_signed" disabled>Send Signed Update</button>
+</div>
 <script type="text/javascript">
 document.getElementById('signature').addEventListener("change",sign_json);
 
@@ -88,10 +86,10 @@ prep_btn.onclick = async (e) => {
         hash.style.visibility = 'visible';
         hash.value = JSON.parse(obj["metadata_signature"]).signature_hash;
         var sig = document.getElementById('signature');
-        document.getElementById('send_signed').disabled = false;
+        document.getElementById('pro_send_signed').disabled = false;
     };
 
-send_signed.onclick = async (e) => {
+pro_send_signed.onclick = async (e) => {
         sign_json();
         console.log(JSON.stringify(document.getElementById('jsonString').value))
         let response = await fetch("{{ base_url }}/api/proxy/profile", {
@@ -110,11 +108,3 @@ send_signed.onclick = async (e) => {
     };
 
 </script>
-
-{% endblock %}
-{% block leftcolumn %}
-{% include "wallet.html.jinja" %}
-{% endblock %}
-{% block rightcolumn %}
-{% include "sidebar.html.jinja" %}
-{% endblock %}

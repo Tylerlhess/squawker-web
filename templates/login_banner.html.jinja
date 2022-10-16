@@ -1,13 +1,2 @@
-{% from 'bootstrap/form.html' import render_form %}
-<div>
-    {% if session['email'] %}
-        {% if not session['address'] %}
-            <a href="/register_test"> Register with your address </a>
-        {% endif %}
-    {% else %}
-        <a href="/login_google"><img src="/static/btn_google_signin_dark_normal_web.png"></a>
-    {% endif %}
-
-</div>
 
 {% include "ToDo.html.jinja" %}

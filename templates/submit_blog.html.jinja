@@ -1,42 +1,52 @@
 {% extends "base.html.jinja" %}
 {% block title %}Squawker{% endblock %}
 {% block content %}
-<div align="right">
 
-<form id="profile_form" method="POST" action="{{ base_url }}/edit_profile">
+
+<form id="article_form" method="POST" action="{{ url_for('index') }}api/proxy">
     {{ form.csrf_token }}
+    {{ form.address.label }} <br />
+    {{ form.address(style="width: 100%") }} <br />
+    {{ form.support_address.label }} <br />
+    {{ form.support_address(style="width: 100%") }} <br />
+    {{ form.article_title.label }}<br />
+    {{ form.article_title(style="width: 100%", rows=6) }}<br />
+    {{ form.article_version.label }}<br />
+    {{ form.article_version(style="width: 100%", rows=6) }}<br />
+    {{ form.article.label }}<br />
+    {{ form.article(type="text", style="width: 100%", rows=6) }}<br />
+    {{ form.media.label }}<br /> {{ form.media(readonly='true') }}<br />
     {{ form.jsonString(hidden='true') }}
-    {{ form.address.label }}
-    {%- if session["address"] -%}
-    {{ session["address"] }} <br />
-    {% else %}
-    {{ form.address(style="width: 75%") }} <br />
-    {%- endif -%}
-    {{ form.name.label }} {{ form.name(style="width: 75%") }}<br>
-    {{ form.profile_picture.label }} {{ form.profile_picture(style="width: 75%") }}<br>
-    {{ form.aet.label }} {{ form.aet(style="width: 75%") }}<br>
-    {{ form.bio.label }} {{ form.bio(type="text", style="width: 75%", rows=6, wrap=true) }}<br>
-    {{ form.extraFields(hidden=true) }}
-    {{ form.signature_hash.label }} {{ form.signature_hash(style="width: 75%") }}<br/>
-    {{ form.signature.label }} {{ form.signature(style="width: 75%") }}<br/>
+    {{ form.signature_hash.label }}<br /> {{ form.signature_hash(style="width: 100%") }}<br />
+    {{ form.signature.label }}<br /> {{ form.signature(style="width: 100%") }}<br />
 
 </form>
-
-</div>
-<button id="prep_btn">Prepare Update</button><button id="send_signed" disabled> Send Signed Profile Update</button>
+<button id="publish"> Prepare Article</button><button id="send_signed" disabled> Publish Article</button>
 
 <script type="text/javascript">
-document.getElementById('signature').addEventListener("change",sign_json);
-
+document.getElementById('signature').addEventListener("change",update_json);
 
 {% if session["address"] %}
-const addy = document.getElementById('address');
-addy.style = "width: 75%";
-addy.readOnly = true;
+var addr = document.getElementById('address');
+addr.value = "{{ session["address"].split("value=")[1].split('"')[1] }}";
+addr.readOnly = true;
 {% endif %}
 
+
+async function sha256() {
+  var field1 = document.getElementById('address').value;
+  var field2 = document.getElementById('kaw').value.replace(/\n/g, "\\n");
+
+    if(field1 != "" && field2 != ""){
+      var jsonString = '{"sender": "' + field1 + '", "message": "' + field2 + '", "media": [] }';
+
+      document.getElementById('jsonString').value = jsonString;
+      console.log(jsonString);
+    }
+}
+
 function update_json() {
-  const form = document.getElementById('profile_form');
+  const form = document.getElementById('article_form');
   const fd = new FormData();
   const props = {};
   for (let element of form.elements) {
@@ -52,7 +62,7 @@ function update_json() {
 }
 
 function sign_json() {
-  var field1 = document.getElementById('jsonString');
+  var field1 = document.getElementById('article');
   var obj = JSON.parse(field1.value);
   var metadata = JSON.parse(obj.metadata_signature);
   var sig = document.getElementById('signature').value;
@@ -67,9 +77,10 @@ function sign_json() {
 }
 
 
-prep_btn.onclick = async (e) => {
+
+publish.onclick = async (e) => {
         update_json();
-        let response = await fetch("{{ base_url }}/api/proxy_sign", {
+            let response = await fetch("{{ base_url }}/api/proxy_sign", {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -78,28 +89,28 @@ prep_btn.onclick = async (e) => {
         })
 
         let text = await response.text(); // read response body as text
-        var content = document.getElementById('jsonString');
-        content.value = text;
+        console.log(text);
+        var content = document.getElementById('article')
+        content.value = text.toString();
         content.readOnly = true;
         var obj = JSON.parse(text)
-        console.log(text);
         content.value = JSON.stringify(obj);
-        hash = document.getElementById('signature_hash');
+        let hash = document.getElementById('signature_hash');
         hash.style.visibility = 'visible';
         hash.value = JSON.parse(obj["metadata_signature"]).signature_hash;
-        var sig = document.getElementById('signature');
+        var sig = document.getElementById('signature')
         document.getElementById('send_signed').disabled = false;
     };
 
 send_signed.onclick = async (e) => {
         sign_json();
-        console.log(JSON.stringify(document.getElementById('jsonString').value))
-        let response = await fetch("{{ base_url }}/api/proxy/profile", {
+        console.log(JSON.stringify(document.getElementById('article').value))
+        let response = await fetch('{{ base_url }}/api/proxy/publish', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify(document.getElementById('jsonString').value)
+                body: JSON.stringify(document.getElementById('article').value)
         })
 
         let text = await response.text(); // read response body as text
@@ -110,6 +121,7 @@ send_signed.onclick = async (e) => {
     };
 
 </script>
+
 
 {% endblock %}
 {% block leftcolumn %}

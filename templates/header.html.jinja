@@ -1,4 +1,22 @@
 
-    <div class="header text-black"><h1><a href="https://squawker.badguyty.com">SQUAWKER</a></h1>
-    <p>Squawker is still very much Under Construction</p>
+   <!-- <link href="{{base_url}}/static/styles.css" rel="stylesheet"> -->
+    <div class="header text-black">
+        <div><a href="{{ base_url }}"><img src="{{ base_url }}/static/squawker_final_logo_2.png" alt="Squawker" style="width: 50%; align-top"></a><br>
+            </div>
+    </div>
+    <div class="text-black ">
+        <ul class="btn-group btn-group-lg" width="100%">
+            {% if session['address'] -%}
+            <a class="btn btn-secondary" href='{{ base_url }}/logout'>Logout</a>
+            {% else -%}
+            <a class="btn btn-secondary" href='{{ base_url }}/login'>Login</a>
+            {% endif %}
+            <a class="btn btn-secondary" href="{{ base_url }}/">Home</a>
+            <a class="btn btn-secondary" href="{{ base_url }}/kaws">View Kaws</a>
+            <a class="btn btn-secondary" href="{{ base_url }}/blog_posts">Articles</a>
+            <a class="btn btn-secondary" href="{{ base_url }}/market">Market Listings</a>
+        </ul>
+    </div>
+<div class="align">
+
     </div>

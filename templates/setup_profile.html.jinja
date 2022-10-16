@@ -12,12 +12,13 @@
     {% include "profile.html.jinja" %}
 {% else %}
     {% include "login_banner.html.jinja" %}
+{% endif %}
 {% endblock %}
 {% block content %}
-<form method="POST" action="/register_test">
+<form method="POST" action="/update_profile">
     {{ form.csrf_token }}
     {{ form.address.label }} {{ form.address(size=20) }}<br>
-    <input type="submit" value="Register">
+    <input type="submit" value="Update Profile">
 </form>
 {% endblock %}
 {% block rightcolumn %}

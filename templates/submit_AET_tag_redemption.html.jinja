@@ -1,25 +1,82 @@
 {% extends "base.html.jinja" %}
 {% block title %}Squawker{% endblock %}
 {% block content %}
-{% if form.aet.errors %}
+{% if form.ravencoinAddress.errors %}
     <div class="alert alert-danger">
         <ul>
-            {% for error in form.aet.errors %}
+            {% for error in form.ravencoinAddress.errors %}
                 <li>{{ error }}</li>
             {% endfor %}
         </ul>
     </div>
 {% endif %}
 
-<form method="POST" action="http://squawker.app:8001/api/tag">
+<form method="POST" action="https://squawker.app/api/tag">
     {{ form.csrf_token }}
-    {{ form.form_ravencoinAddress.label }} {{ form.form_ravencoinAddress(size=36) }}<br>
-    {{ form.form_pgpPubkey.label }} {{ form.form_pgpPubkey() }}<br>
-    {{ form.form_signatureHash.label }} {{form.form_signatureHash(disabled="true") }}<br>
-    {{ form.form_signature.label }} {{ form.form_signature() }}<br>
-    <input type="submit" value="Get_AET_Hash">
+    {{ form.ravencoinAddress.label }} <br />
+    {{ form.ravencoinAddress(cols=36) }}<br>
+    {{ form.pgpPubkey.label }}<br />
+    {{ form.pgpPubkey(cols=81, rows=31) }}<br>
+    <textarea id="jsonString" cols="80" rows="3"></textarea><br />
+    {{ form.signatureHash.label }} {{ form.signatureHash(readonly='true') }}<br>
+    {{ form.signature.label }} {{ form.signature() }}<br>
+    <textarea id="fullJson" cols="125" rows="12" wrap="soft"></textarea>
 </form>
-<script src="static/index.js"></script>
+<button id="ipfs"> Get IPFS Hash</button>
+
+<script type="text/javascript">
+document.getElementById('ravencoinAddress').addEventListener("change",sha256);
+document.getElementById('pgpPubkey').addEventListener("change",sha256);
+document.getElementById('signature').addEventListener("change",sha256);
+
+
+async function sha256() {
+  var field1 = document.getElementById('ravencoinAddress').value;
+  var field2 = document.getElementById('pgpPubkey').value.replace(/\n/g, "\\n");
+  var signature = document.getElementById('signature').value;
+
+    if(field1 != "" && field2 != ""){
+      var jsonString = '{"tag_type": "AET", "ravencoin_address": "'+field1+'", "pgp_pubkey": "'+field2+'"}';
+
+      document.getElementById('jsonString').value = jsonString;
+      console.log(jsonString);
+      // encode as UTF-8
+      const msgBuffer = new TextEncoder('utf-8').encode(jsonString);
+
+      // hash the message
+      const hashBuffer = await window.crypto.subtle.digest('SHA-256', msgBuffer);
+
+      // convert ArrayBuffer to Array
+      const hashArray = Array.from(new Uint8Array(hashBuffer));
+
+      // convert bytes to hex string
+      const hashHex = hashArray.map(b => ('00' + b.toString(16)).slice(-2)).join('');
+      console.log(hashHex);
+      document.getElementById('signatureHash').value = hashHex;
+
+      document.getElementById('fullJson').value = "{\"tag\": {\"tag_type\": \"AET\",\"ravencoin_address\": \""+field1+"\",\"pgp_pubkey\": \""+field2+"\"},\"metadata_signature\": {\"signature_hash\": \""+hashHex+"\",\"signature\": \""+signature+"\"}}";
+    }
+}
+
+
+ ipfs.onclick = async (e) => {
+        let response = await fetch('https://squawker.app/api/tag', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(document.getElementById('fullJson').value)
+        })
+
+        let text = await response.text(); // read response body as text
+        alert(text);
+      //  document.querySelector("#encoded").innerHTML = text;
+      //  document.querySelector("#encoded").innerHTML = `First name = ${data.firstname} <br/>
+      //                                                  Last name = ${data.lastname} <br/>
+      //                                                  Age    = ${data.age}`
+    };
+
+</script>
 
 
 {% endblock %}

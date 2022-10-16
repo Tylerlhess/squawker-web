@@ -193,6 +193,7 @@ body{text-align:center;}
 	width: 64px;
 	height: 64px;
 	overflow: hidden;
+	object-fit: cover;
 	clip-path: circle(32px);
 	border: white;
 	position: relative;
@@ -208,10 +209,41 @@ body{text-align:center;}
 	clip-path: circle(35px);
 }
 
+.pro_pic img{
+}
+
+.pro_text{
+    max-width:35em;
+}
+
 .pro_data{
 	color: #FFFFFF;
 }
 
 .kaw_text{
 	margin: 10px;
+}
+
+#h ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    background-color: #001cd6;
+}
+
+#h li {
+    float: left;
+}
+
+#h li a {
+    display: block;
+    color: white;
+    text-align: center;
+    padding: 16px;
+    text-decoration: none;
+}
+
+#h li a:hover {
+    background-color: #0d1e89;
 }

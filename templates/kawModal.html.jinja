@@ -1,0 +1,155 @@
+<div class="modal-body">
+<form method="POST" action="{{ url_for('index') }}api/proxy">
+    {{ kawForm.csrf_token }}
+    {{ kawForm.address.label }} <br />
+    {%- if session["address"] -%}
+    {{ session["address"] }} <br />
+    {% else %}
+    {{ kawForm.address(style="width: 100%") }} <br />
+    {%- endif -%}
+    {{ kawForm.kaw.label }}<br />
+    {{ kawForm.kaw(type="text", style="width: 100%", rows=6) }}<br>
+    {{ kawForm.media.label }}<br> {{ kawForm.media(readonly='true') }}<br>
+    {{ kawForm.jsonString(hidden='true') }}
+    {{ kawForm.signature_hash.label }}<br /> {{ kawForm.signature_hash(style="width: 100%") }}<br />
+    {{ kawForm.signature.label }}<br /> {{ kawForm.signature(style="width: 100%") }}<br />
+
+</form>
+</div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-dark" id="kaw_btn">Kaw</button>
+        <button type="button" class="btn btn-dark" id="kaw_send_signed" disabled>Send Signed Kaw</button>
+</div>
+<script type="text/javascript">
+document.getElementById('kaw').addEventListener("change",sha256);
+document.getElementById('signature').addEventListener("change",update_json);
+
+{% if session["address"] %}
+var addr = document.getElementById('address');
+addr.value = "{{ session["address"].split("value=")[1].split('"')[1] }}";
+addr.readOnly = true;
+{% endif %}
+
+
+async function sha256() {
+  var field1 = document.getElementById('address').value;
+  var field2 = document.getElementById('kaw').value.replace(/\n/g, "\\n");
+
+    if(field1 != "" && field2 != ""){
+      var jsonString = '{"sender": "' + field1 + '", "message": "' + field2 + '", "media": [] }';
+
+      document.getElementById('jsonString').value = jsonString;
+      console.log(jsonString);
+    }
+}
+
+function update_json() {
+  var field1 = document.getElementById('kaw');
+  var obj = JSON.parse(field1.value);
+  var metadata = JSON.parse(obj.metadata_signature);
+  var sig = document.getElementById('signature').value;
+  console.log(sig);
+  metadata["signature"] = sig;
+  console.log(metadata);
+  obj.metadata_signature = JSON.stringify(metadata);
+  console.log(obj);
+  field1.readonly = false;
+  field1.value = JSON.stringify(obj);
+  field1.readonly = true ;
+}
+
+
+
+kaw_btn.onclick = async (e) => {
+        sha256();
+            let response = await fetch("{{ base_url }}/api/proxy_sign", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(document.getElementById('jsonString').value)
+        })
+
+        let text = await response.text(); // read response body as text
+<!--        alert(text);-->
+        console.log(text);
+        var content = document.getElementById('kaw')
+        content.value = text.toString();
+<!--        // make kaw field read only-->
+        content.readOnly = true;
+<!--        // display json returned as text in content field-->
+        var obj = JSON.parse(text)
+        content.value = JSON.stringify(obj);
+<!--        // fill in/display signature hash field-->
+        let hash = document.getElementById('signature_hash');
+        hash.style.visibility = 'visible';
+        hash.value = JSON.parse(obj["metadata_signature"]).signature_hash;
+
+<!--        // unhide signature field-->
+        var sig = document.getElementById('signature')
+<!--        sig.style.visibility = 'visible';-->
+<!--        sig.readonly = false;-->
+        document.getElementById('kaw_send_signed').disabled = false;
+        document.getElementById('kaw_send_signed').class = "btn btn-primary";
+
+    };
+
+kaw_send_signed.onclick = async (e) => {
+        update_json();
+        console.log(JSON.stringify(document.getElementById('kaw').value))
+        let response = await fetch('{{ base_url }}/api/proxy/kaw', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(document.getElementById('kaw').value)
+        })
+
+        let text = await response.text(); // read response body as text
+        var obj = JSON.parse(text);
+        if (obj.sent) {
+          window.location.href = obj.location;
+        } else { alert(obj.error); }
+    };
+
+function enable_rvn_extension(extensionID) {
+    console.log("running enable_rvn_extension");
+    document.getElementById("rvn_ext").setAttribute("onclick", async (e) => {
+        sha256();
+        let response = await fetch("{{ base_url }}/api/proxy_sign", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(document.getElementById('jsonString').value)
+        });
+
+        let text = await response.text(); // read response body as text
+        console.log(text);
+        var obj = JSON.parse(text)
+        chrome.runtime.sendMessage(extensionID, {message: JSON.parse(obj["metadata_signature"]).signature_hash},
+            function(response) {
+                if (!response.success)
+                    console.log("no response");
+                if (response.signature)
+                    obj["metadata_signature"].signature = response.signature;
+            });
+        console.log(JSON.parse(obj))
+        let response2 = await fetch('{{ base_url }}/api/proxy/kaw', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.parse(obj)
+        });
+
+        let text2 = await response2.text(); // read response body as text
+        var obj = JSON.parse(text2);
+        if (obj.sent) {
+          window.location.href = obj.location;
+        } else { alert(obj.error); }
+    });
+    document.getElementById('rvn_ext').disabled = false;
+    document.getElementById('rvn_ext').hidden = false;
+}
+</script>
