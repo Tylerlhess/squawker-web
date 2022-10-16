@@ -2,7 +2,16 @@ from utils import tx_to_self
 from serverside import *
 import squawker_errors
 import json
+import requests, logging
 
+logger = logging.getLogger('squawker_profile')
+logger.setLevel(logging.DEBUG)
+handler = logging.FileHandler(filename='profile.log', encoding='utf-8', mode='w')
+handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s'))
+logger.addHandler(handler)
+handler2 = logging.FileHandler(filename='squawker.log', encoding='utf-8', mode='a')
+handler2.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s'))
+logger.addHandler(handler2)
 
 class Profile():
     def __init__(self, address):
@@ -17,6 +26,21 @@ class Profile():
     def validate(self, ipfs_hash):
         try:
             data = json.loads(ipfs.cat(ipfs_hash))
+            #need to get proxied messages here
+            if "contents" in data and ("sender" in data or "address" in data) and "metadata_signature" in data:
+                params = {'ipfs_hash': ipfs_hash}
+                url = 'http://127.0.0.1:8081/api/verify_proxied'
+                r = requests.post(url, params=params)
+                logger.info(f"{r.text}, {r.status_code}")
+                if "True" in r.text:
+                    data = json.loads(json.loads(ipfs.cat(ipfs_hash))["contents"])
+                    logger.info(f"returning {data} from proxied message")
+                    try:
+                        data["address"] = data["sender"]
+                    except KeyError:
+                        data["sender"] = data["address"]
+                else:
+                    raise squawker_errors.NoProfile(f"No profile in ipfs hash {ipfs_hash}")
             for key in data:
                 self.__dict__[key] = data[key]
         except json.decoder.JSONDecodeError:
@@ -44,7 +68,19 @@ class Profile():
                         kaw = {"address": vout["addresses"], "message": vout["asset"]["message"],
                                "block": transaction["locktime"]}
                         latest.append(kaw)
-        return sorted(latest[:1], key=lambda message: message["block"], reverse=True)[0]
+            if tx["satoshis"] == 10500000 and tx_to_self(tx, 0.105):
+                transaction = rvn.decoderawtransaction(rvn.getrawtransaction(tx["txid"])["result"])["result"]
+                for vout in transaction["vout"]:
+                    vout = vout["scriptPubKey"]
+                    if vout["type"] == "transfer_asset" and vout["asset"]["name"] == ASSETNAME and vout["asset"][
+                        "amount"] == 0.105:
+                        kaw = {"address": vout["addresses"], "message": vout["asset"]["message"],
+                               "block": transaction["locktime"]}
+                        latest.append(kaw)
+        try:
+            return sorted(latest[:1], key=lambda message: message["block"], reverse=True)[0]
+        except:
+            return {"message": "QmTxh98Jboa7RJPt6EiuWGUdyDzMM94FdAb2PHDxAq5A1y"}
 
     def basic_xml(self):
         return f"""

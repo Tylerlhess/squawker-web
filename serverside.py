@@ -1,6 +1,6 @@
 from ravenrpc import Ravencoin
 import ipfshttpclient
-from credentials import USER, PASSWORD
+from credentials1 import USER, PASSWORD
 
 try:
     rvn = Ravencoin(USER, PASSWORD, port=8766)

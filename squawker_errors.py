@@ -25,6 +25,10 @@ class NotMessage(LoggedBaseException):
     pass
 
 
+class NotArticle(LoggedBaseException):
+    pass
+
+
 class NotRegistered(LoggedBaseException):
     pass
 

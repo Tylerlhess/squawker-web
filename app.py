@@ -1,38 +1,26 @@
-from requests_oauthlib import OAuth2Session
+import requests, json
 from flask import Flask, request, redirect, session, url_for, render_template, send_file, abort
-from flask.json import jsonify
-from markupsafe import escape
-from web_profile import Profile
 from utils import *
-from web_message import Message
 from market import Listing
-import os
-from credentials import GOOGLE_OAUTH2_SECRET, GOOGLE_OAUTH2_CLIENTID, SITE_SECRET_KEY
+from credentials import SITE_SECRET_KEY, site_url
 from dbconn import Conn
-from squawker_errors import *
-from flask_bootstrap import Bootstrap
 from forms import *
-from serverside import rvn, TEST_WALLET_ADDRESS, WALLET_ADDRESS
 import logging
-from flask_wtf.csrf import CSRFProtect
 from web_account import Account
+from json_message import Message
+from json_profile import Profile
+from json_blog import Article
+from squawker_errors import *
+from json_rss import rss
 
-#csrf = CSRFProtect()
+
 
 app = Flask(__name__)
 
 
 app.secret_key = SITE_SECRET_KEY
-#csrf.init_app(app)
 
-site_url = 'https://squawker.app'
-
-google_redirect_uri = 'https://squawker.badguyty.com/callback'
-google_authorization_base_url = "https://accounts.google.com/o/oauth2/v2/auth"
-google_token_url = "https://www.googleapis.com/oauth2/v4/token"
-google_scope = [
-    "https://www.googleapis.com/auth/userinfo.email"
-]
+#site_url = 'https://squawker.app'
 
 logger = logging.getLogger('squawker_app')
 logger.setLevel(logging.DEBUG)
@@ -46,171 +34,124 @@ logger.addHandler(handler2)
 
 @app.route("/", methods=['GET'])
 def index():
-    logger.info(f'Session started with {session}')
-    latest_msg = find_latest_messages(asset="SQUAWKER")
-    messages = []
-    for m in latest_msg:
-        try:
-            messages.append(Message(m).html())
-        except:
-            pass
-    return render_template("index.html.jinja", messages=messages)
+    kawForm = SendKaw()
+    articleForm = PublishArticle()
+    proForm = EditProfile()
+    loginForm = Login()
+
+    session["site_url"] = site_url
+    logger.info(f'Session started with {session} in index')
+    if "signstring" not in session:
+        session["signstring"] = gen_signstring()
+    conn = Conn()
+    messages = [Message(msg).html() for msg in conn.get_kaws()]
+    return render_template("front-page.html.jinja", base_url=site_url, messages=messages, kawForm=kawForm, articleForm=articleForm, profile_form=proForm, loginForm=loginForm)
 
 
 @app.route("/user/<rvn_address>")
 def user(rvn_address):
+    kawForm = SendKaw()
+    articleForm = PublishArticle()
+    proForm = EditProfile()
+    loginForm = Login()
+
     usr = Profile(rvn_address).html()
     #return str(usr)
-    return render_template("user.html.jinja", profile=usr)
+    return render_template("user.html.jinja", profile=usr, kawForm=kawForm, articleForm=articleForm, profile_form=proForm, loginForm=loginForm)
 
 @app.route("/profile/<rvn_address>")
 def profile(rvn_address):
+    kawForm = SendKaw()
+    articleForm = PublishArticle()
+    proForm = EditProfile()
+    loginForm = Login()
+
     usr = Profile(rvn_address).html()
-    # #return str(usr)
-    # page = ""
-    # for atb in usr:
-    #     page += str(atb) + str(usr[atb])
-    return render_template("profile.html.jinja", profile=usr)
+    return render_template("profile.html.jinja", profile=usr, kawForm=kawForm, articleForm=articleForm, profile_form=proForm, loginForm=loginForm)
 
 @app.route("/message/<message_address>")
 def message(message_address):
+    kawForm = SendKaw()
+    articleForm = PublishArticle()
+    proForm = EditProfile()
+    loginForm = Login()
+
     msg = Message(message_address)
     return str(msg)
 
 
-@app.route('/login_google')  # login with google
-def logintogoogle():
-    google = OAuth2Session(GOOGLE_OAUTH2_CLIENTID, redirect_uri=site_url + "/callback_google", scope=google_scope)
+@app.route('/login', methods=['POST', 'GET'])
+def login():
+    """The function to login"""
+    session["site_url"] = site_url
 
-    google_authorization_url, gstate = google.authorization_url(google_authorization_base_url, access_type="offline", prompt="select_account")
-    session['oauth_state'] = gstate
-    return redirect(google_authorization_url)
+    kawForm = SendKaw()
+    articleForm = PublishArticle()
+    proForm = EditProfile()
+    loginForm = Login()
+    if "signstring" not in session:
+        session["signstring"] = gen_signstring()
 
-
-@app.route('/callback_google')  # login routing with google
-def callbackfromgoogle():
-    google = OAuth2Session(GOOGLE_OAUTH2_CLIENTID, redirect_uri=site_url + "/callback_google", state=session['oauth_state'])
-
-    google_token = google.fetch_token(google_token_url, client_secret=GOOGLE_OAUTH2_SECRET,
-                                      authorization_response=request.url)
-
-    session['oauth_token'] = google_token
-    logger.info(f"google callback {session['oauth_token']}")
-
-    google = OAuth2Session(GOOGLE_OAUTH2_CLIENTID, token=session['oauth_token'])
-    google_user = google.get("https://www.googleapis.com/oauth2/v1/userinfo").json()
-
-    email = google_user["email"]
-    session['email'] = email
-    logger.info(f"session email = {session['email']} in {session}")
-    try:
-        conn = Conn()
-        result = conn.get_address(email)
-        logger.info(f'get address returned {result}')
-        session['address'] = result['p2sh_address']
-        session['phash'], session['ptime'] = result['profile_hash'], result['profile_timestamp']
-        if session['phash'] is not None:
-            return redirect(url_for('index'))
-        else:
-            try:
-                if conn.fix_profile(session['address']):
-                    return redirect(url_for('index'))
+    if request.method == 'POST' and loginForm.validate():
+        params = {'jsonRequest': json.dumps(loginForm.data)}
+        url = 'http://127.0.0.1:8081/api/verify_sig'
+        r = requests.post(url, params=params)
+        logger.info(f"{r.text}, {r.status_code}")
+        if "True" in r.text:
+            session["site_url"] = site_url
+            session["address"] = loginForm["address"]
+            profile = Profile(str(session['address']))
+            for atb in profile.__dict__:
+                if atb == "picture":
+                    session["profile_picture"] = profile.profile_picture
+                elif atb == "name":
+                    session["name"] = profile.name
+                elif atb == "address":
+                    pass
                 else:
-                    return render_template("setup_profile.html.jinja", form=tRegister())
-            except Exception as e:
-                logger.info(f'{type(e)} {e} returned.')
-                return abort('404')
+                    if "others" not in session:
+                        session["others"] = dict()
+                    if not callable(atb):
+                        session["others"][atb] = profile.__dict__[atb]
 
-    except NotRegistered:
-        return render_template("setup_account.html.jinja", form=tRegister())
-    except NoProfile:
-        # Has current session top pass account
-        return render_template("setup_profile.html.jinja", form=tRegister())
-    except Exception as e:
-        logger.info(f'Raised exception {type(e)} : {e} session is set to {session}')
-        return redirect('/')
+        return redirect(site_url)
 
-@app.route('/register', methods=['GET', 'POST'])
-def register():
-    form = Register()
-    if form.validate_on_submit():
-        multisig = rvn.createmultisig('{[1, "[\"{form.address}\", \"{WALLET_ADDRESS}\"]"]}')
-        form.p2sh_address = multisig["address"]
-        form.multisig_redeem_script = multisig["redeemScript"]
-        conn = Conn()
-        conn.submit_registration(form)
-        return redirect('/')
-    return render_template('setup_account.html.jinja', form=form)
-
-
-@app.route('/register_test', methods=['GET', 'POST'])
-def tregister():
-    form = tRegister()
-    logger.info(f"Form validation results = {form.validate()}")
-    logger.info(f"Form values = {form.data}")
-    if request.method == 'POST' and form.validate():
-        keys = [form.data["address"], TEST_WALLET_ADDRESS]
-        multisig = rvn.createmultisig(1, keys)["result"]
-        conn = Conn()
-        conn.submit_tregistration((session["email"], form.data["address"], multisig["address"], multisig["redeemScript"]))
-        return render_template('edit_profile.html.jinja', form=EditProfile())
-    return render_template('setup_account.html.jinja', form=form)
+    return render_template("login_page.html.jinja", base_url=site_url, loginForm=loginForm, kawForm=kawForm, articleForm=articleForm, profile_form=proForm)
 
 
 @app.route("/logout")
 def logout():
     session.clear()
-    return redirect("squawker.app/")
+    return redirect(site_url)
 
 
-@app.route('/send_message_file')
-def senddownload(filepath=None):
-    if filepath is None:
-        abort(400)
+@app.route('/update_profile', methods=['GET', 'POST'])
+def edit_profile():
     try:
-        return send_file(filepath, as_attachment=True)
-    except Exception as e:
-        abort(400)
+        kawForm = SendKaw()
+        articleForm = PublishArticle()
+        proForm = EditProfile()
+        loginForm = Login()
 
-
-@app.route("/new_message", methods=['GET', 'POST'])
-def new_message():
-    form = SendKaw()
-    logger.info(f"/new_message Form values = {form.data}")
-    if request.method == 'POST' and form.validate():
-        account = Account(session["email"])
-        tx_id, x, hash = account.send_kaw(form.data["kaw"])
-        logger.info(f"/new_message tx id = {tx_id} and hash = {hash}")
-        return redirect('squawker.app/')
-
-    return render_template('new_message.html.jinja', form=form)
-
-
-@app.route('/edit_profile_test', methods=['GET', 'POST'])
-def edit_profile_test():
-    try:
-        form = EditProfile()
         logger.info(f"Form values = {form.data}")
         if request.method == 'POST' and form.validate():
-            conn = Conn()
-            session_data = conn.submit_tprofile((session["email"], form.data), {})
-            for key in session_data['profile']['keys']:
+            for key in session['profile']['keys']:
                 logger.info(f"updating session {key} with session_data key {session_data}")
                 session[key] = session_data[key]
             Account(session['email']).update_profile(profile_dict=session_data)
-            return redirect('/')
-
-
-        return render_template('edit_profile.html.jinja', form=form)
+            return redirect(site_url)
+        return render_template('edit_profile.html.jinja', base_url=site_url, kawForm=kawForm, articleForm=articleForm, profile_form=proForm, loginForm=loginForm)
     except KeyError:
-        if not session['email']:
-            return redirect('https://squawker.app/login_google')
-        if not session["profile"]:
-            return render_template('edit_profile.html.jinja', form=form)
-        return redirect('https://squawker.app')
+        return redirect(f'{site_url}/login')
+
 
 @app.route('/market', methods=['GET','POST'])
 def market():
+    kawForm = SendKaw()
+    articleForm = PublishArticle()
+    proForm = EditProfile()
+    loginForm = Login()
+
     form = MarketAsset()
     logger.info(f"market form data is {form.data['asset']}")
     if request.method == 'POST' and form.validate():
@@ -221,7 +162,7 @@ def market():
                 listings.append(Listing(l).html())
             except:
                 pass
-        return render_template("market.html.jinja", listings=listings, form=form)
+        return render_template("market.html.jinja", listings=listings, form=form, kawForm=kawForm, articleForm=articleForm, profile_form=proForm, loginForm=loginForm)
     else:
         latest_listings = find_latest_flags("SQUAWKER", satoshis=20000000)
         listings = []
@@ -230,9 +171,136 @@ def market():
                 listings.append(Listing(l).html())
             except:
                 pass
-        return render_template("market.html.jinja", listings=listings, form=form)
+        return render_template("market.html.jinja", listings=listings, form=form, kawForm=kawForm, articleForm=articleForm, profile_form=proForm, loginForm=loginForm)
+
 
 @app.route('/AET', methods=['GET'])
 def AET():
+    kawForm = SendKaw()
+    articleForm = PublishArticle()
+    proForm = EditProfile()
+    loginForm = Login()
+
     form = AETRedemption()
-    return render_template("submit_AET_tag_redemption.html.jinja", form=form)
+    return render_template("submit_AET_tag_redemption.html.jinja", base_url=site_url, form=form, kawForm=kawForm, articleForm=articleForm, profile_form=proForm, loginForm=loginForm)
+
+
+@app.route('/KAW', methods=['GET'])
+def KAW():
+    kawForm = SendKaw()
+    articleForm = PublishArticle()
+    proForm = EditProfile()
+    loginForm = Login()
+
+    form = SendKaw()
+    return render_template("submit_kaw.html.jinja", base_url=site_url, form=form, kawForm=kawForm, articleForm=articleForm, profile_form=proForm, loginForm=loginForm)
+
+
+@app.route('/reply/<reply_txid>', methods=['GET'])
+def reply(reply_txid):
+    form = ReplyKaw()
+    conn = Conn()
+    kawForm = SendKaw()
+    articleForm = PublishArticle()
+    proForm = EditProfile()
+    loginForm = Login()
+
+    try:
+        kaw = conn.get_kaw(reply_txid)
+        logger.info(f"{kaw} is the kaw in reply")
+        messages = [Message(msg).html() for msg in kaw]
+    except:
+        art = conn.get_blog_for_reply(reply_txid)
+        art["sender"] = art["address"]
+        art["text"] = art["article_title"]
+        logger.info(f"{art} is the current article")
+        messages = [Message(art).html()]
+    return render_template("reply_to_kaw.html.jinja", base_url=site_url, form=form, messages=messages, reply_txid=reply_txid, kawForm=kawForm, articleForm=articleForm, profile_form=proForm, loginForm=loginForm)
+
+
+@app.route('/publish', methods=['GET', 'POST'])
+def publish():
+    kawForm = SendKaw()
+    articleForm = PublishArticle()
+    proForm = EditProfile()
+    loginForm = Login()
+
+    form = PublishArticle()
+    return render_template("submit_blog.html.jinja", base_url=site_url, form=form, kawForm=kawForm, articleForm=articleForm, profile_form=proForm, loginForm=loginForm)
+
+
+@app.route("/blog_posts", methods=['GET'])
+def blogs():
+    kawForm = SendKaw()
+    articleForm = PublishArticle()
+    proForm = EditProfile()
+    loginForm = Login()
+
+    session["site_url"] = site_url
+    logger.info(f'Session started with {session} in blog_posts')
+    if "signstring" not in session:
+        session["signstring"] = gen_signstring()
+    conn = Conn()
+    articles = [Article(blog["address"], blog["ipfs_hash"]).short_html() for blog in conn.get_blogs()]
+    return render_template("index2.html.jinja", base_url=site_url, articles=articles, kawForm=kawForm, articleForm=articleForm, profile_form=proForm, loginForm=loginForm)
+
+
+@app.route("/article/<address>/<article_hash>", methods=['GET'])
+def article(address, article_hash):
+    kawForm = SendKaw()
+    articleForm = PublishArticle()
+    proForm = EditProfile()
+    loginForm = Login()
+
+    art = Article(address, article_hash).html()
+    session["site_url"] = site_url
+    logger.info(f'Session started with {session} in article')
+    if "signstring" not in session:
+        session["signstring"] = gen_signstring()
+    return render_template("article.html.jinja", base_url=site_url, article=art, kawForm=kawForm, articleForm=articleForm, profile_form=proForm, loginForm=loginForm)
+
+
+@app.route("/kaws", methods=['GET'])
+def kaws():
+    kawForm = SendKaw()
+    articleForm = PublishArticle()
+    proForm = EditProfile()
+    loginForm = Login()
+
+    session["site_url"] = site_url
+    logger.info(f'Session started with {session}')
+    if "signstring" not in session:
+        session["signstring"] = gen_signstring()
+    conn = Conn()
+    messages = [Message(msg).html() for msg in conn.get_kaws()]
+
+    return render_template("view_kaws.html.jinja", base_url=site_url, messages=messages, kawForm=kawForm, articleForm=articleForm, profile_form=proForm, loginForm=loginForm)
+
+
+@app.route("/sent/<txid>", methods=['GET'])
+def sent(txid):
+    kawForm = SendKaw()
+    articleForm = PublishArticle()
+    proForm = EditProfile()
+    loginForm = Login()
+
+    session["site_url"] = site_url
+    logger.info(f'Session started with {session}')
+    if "signstring" not in session:
+        session["signstring"] = gen_signstring()
+    conn = Conn()
+    return render_template("followup.html.jinja", base_url=site_url, txid=txid, kawForm=kawForm, articleForm=articleForm, profile_form=proForm, loginForm=loginForm)
+
+
+@app.route("/like/<txid>/<sender>", methods=['GET'])
+def like(txid, sender):
+    kawForm = SendKaw()
+    articleForm = PublishArticle()
+    proForm = EditProfile()
+    loginForm = Login()
+
+    return render_template("like.html.jinja", base_url=site_url, txid=txid, sender=sender, kawForm=kawForm, articleForm=articleForm, profile_form=proForm, loginForm=loginForm)
+
+@app.route("/rss/<address>")
+def get_rss(address):
+    return app.response_class(rss(address), mimetype='application/xml')

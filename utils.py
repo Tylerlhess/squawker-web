@@ -1,6 +1,8 @@
 from serverside import *
 import logging
 import inspect
+from bip39 import BIP39WORDLIST
+import random
 
 
 logger = logging.getLogger('squawker_utils')
@@ -14,7 +16,7 @@ logger.addHandler(handler2)
 
 debug = 0
 
-def tx_to_self(tx, size=1):
+def tx_to_self(tx, size=1.00):
     messages = dict()
     messages["addresses"] = [tx["address"]]
     messages["assetName"] = tx["assetName"]
@@ -38,30 +40,74 @@ def find_latest_messages(asset=ASSETNAME, count=50):
                     "amount"] == 1.0:
                     kaw = {"address": vout["addresses"], "message": vout["asset"]["message"],
                            "block": transaction["locktime"]}
+                    logger.info(f"appending {kaw} to latest")
                     latest.append(kaw)
+        elif tx["satoshis"] == 11000000 and tx_to_self(tx, size=0.11):
+            transaction = rvn.decoderawtransaction(rvn.getrawtransaction(tx["txid"])["result"])["result"]
+            for vout in transaction["vout"]:
+                vout = vout["scriptPubKey"]
+                if vout["type"] == "transfer_asset" and vout["asset"]["name"] == asset and vout["asset"][
+                    "amount"] == 0.11:
+                    kaw = {"address": vout["addresses"], "message": vout["asset"]["message"],
+                           "block": transaction["locktime"]}
+                    logger.info(f"appending proxied kaw {kaw} to latest")
+                    latest.append(kaw)
+        else:
+            if tx_to_self(tx):
+                transaction = rvn.decoderawtransaction(rvn.getrawtransaction(tx["txid"])["result"])["result"]
+                for vout in transaction["vout"]:
+                    vout = vout["scriptPubKey"]
+                    if vout["type"] == "transfer_asset" and vout["asset"]["name"] == asset:
+                        try:
+                            kaw = {"address": vout["addresses"], "message": vout["asset"]["message"],
+                               "block": transaction["locktime"]}
+                            logger.info(f"not appending {kaw} to latest as asset amount = {vout['asset']['amount']}")
+                        except KeyError:
+                            pass
+    logger.info(f"returning {sorted(latest[:count], key=lambda message: message['block'], reverse=True)} for the latest messages")
     return sorted(latest[:count], key=lambda message: message["block"], reverse=True)
 
 
 def find_latest_flags(asset=ASSETNAME, satoshis=100000000, count=50):
-    latest = []
-    logger.info(f"asset is {asset}")
-    messages = dict()
-    messages["addresses"] = list(rvn.listaddressesbyasset(asset, False)["result"])
-    messages["assetName"] = asset
-    deltas = rvn.getaddressdeltas(messages)["result"]
-    for tx in deltas:
-        if tx["satoshis"] == satoshis and tx_to_self(tx):
-            transaction = rvn.decoderawtransaction(rvn.getrawtransaction(tx["txid"])["result"])["result"]
-            for vout in transaction["vout"]:
-                vout = vout["scriptPubKey"]
-                if vout["type"] == "transfer_asset" and vout["asset"]["name"] == asset and vout["asset"]["amount"] == satoshis/100000000:
-                    kaw = {
-                        "address": vout["addresses"],
-                        "message": vout["asset"]["message"],
-                        "block": transaction["locktime"]
-                    }
-                    latest.append(kaw)
-    return sorted(latest[:count], key=lambda message: message["block"], reverse=True)
+    try:
+        latest = []
+        logger.info(f"asset is {asset} satoshis {satoshis}")
+        messages = dict()
+        try:
+            messages["addresses"] = list(rvn.listaddressesbyasset(asset, False)["result"])
+            logger.info(f"addresses {messages['addresses']}")
+            messages["assetName"] = asset
+            prelim = rvn.getaddressdeltas(messages)
+            logger.info(f"prelim = {prelim}")
+            deltas = prelim["result"]
+        except IndexError:
+            logger.info(f"*********************!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+        except Exception as e:
+            log_and_raise(e)
+        for tx in deltas:
+            logger.info(f"{int(str(tx['satoshis']))} - {int(str(satoshis))} = {int(str(tx['satoshis'])) - int(str(satoshis))}")
+            if not (int(str(tx['satoshis'])) - int(str(satoshis))):
+                # logger.info(f"tx = {tx}")
+                # logger.info(f'{rvn.decoderawtransaction(rvn.getrawtransaction(tx["txid"])["result"])["result"]}')
+                if tx_to_self(tx, size=(satoshis/100000000)):
+                    # logger.info(f"tx is {type(tx)} {tx}")
+                    transaction = rvn.decoderawtransaction(rvn.getrawtransaction(tx["txid"])["result"])["result"]
+                    # logger.info(f"transaction is {transaction}")
+                    for vout in transaction["vout"]:
+                        vout = vout["scriptPubKey"]
+                        if vout["type"] == "transfer_asset" and vout["asset"]["name"] == asset and vout["asset"]["amount"] == satoshis/100000000:
+                            kaw = {
+                                "address": vout["addresses"],
+                                "message": vout["asset"]["message"],
+                                "block": transaction["locktime"]
+                            }
+                            latest.append(kaw)
+                            logger.info(f"appended {kaw}")
+            # else:
+            #     logger.info(f"transaction {tx} satoshis {tx['satoshis']} don't match {satoshis}")
+        return sorted(latest[:count], key=lambda message: message["block"], reverse=True)
+    except Exception as e:
+        log_and_raise(e)
 
 
 def transaction_scriptPubKey(tx_id, vout):
@@ -155,3 +201,26 @@ def find_inputs(address, asset_quantity, current_asset):
         except IndexError:
             raise Exception(f"Ran out of assets {utxos}")
         return txs
+
+
+def gen_signstring():
+    return ' '.join([BIP39WORDLIST[random.randint(0, len(BIP39WORDLIST))] for i in range(5)])
+
+
+def get_logger(logger_name: str, app_name='squawker') -> logging:
+    new_logger = logging.getLogger(logger_name)
+    new_logger.setLevel(logging.DEBUG)
+    new_handler = logging.FileHandler(filename=logger_name+'.log', encoding='utf-8', mode='a')
+    new_handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s'))
+    new_logger.addHandler(new_handler)
+    new_handler2 = logging.FileHandler(filename=app_name+'.log', encoding='utf-8', mode='a')
+    new_handler2.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s'))
+    new_logger.addHandler(new_handler2)
+    return new_logger
+
+
+def log_and_raise(error):
+    logger.info(f"Exception {type(error)} {str(error)}")
+    raise error
+
+

@@ -1,82 +1,89 @@
-from utils import tx_to_self
+from utils import tx_to_self, find_latest_flags
 from serverside import *
 import squawker_errors
 import json
 from dbconn import Conn
 from ipfshttpclient import exceptions as ipfs_exceptions
 import logging
+import requests
 
 logger = logging.getLogger('squawker_profile')
-logger.setLevel(logging.DEBUG)
-handler = logging.FileHandler(filename='profile.log', encoding='utf-8', mode='w')
-handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s'))
-logger.addHandler(handler)
-handler2 = logging.FileHandler(filename='squawker.log', encoding='utf-8', mode='a')
-handler2.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s'))
-logger.addHandler(handler2)
 
-class Profile():
-    def __init__(self, address, ipfs_hash=None):
+
+class Profile:
+    def __init__(self, address, ipfs_hash=""):
         try:
-            results = Conn().get_profile_data(address)
-            if isinstance(results, list):
-                results = results[0]
-            self.name = "Unknown"
-            logger.info(f"profile build = {results}")
-            for x in results["keys"]:
-                self.__dict__[x] = results[x]
+            # logger.info(f"Failed to import profile from database checking against blockchain with {ipfs_hash}")
+            logger.info(f"Checking for profile against blockchain with {ipfs_hash} for {address}")
+            self.address = address
+            if ipfs_hash == "":
+                self.ipfs_hash = self.find_latest_profile()["message"]
+                logger.info(f"latest profile is from {self.ipfs_hash} this hash contains {ipfs.cat(self.ipfs_hash)}")
+            else:
+                self.ipfs_hash = ipfs_hash
+            self.picture = None
+            self.profile_picture = None
             try:
-                self.validate(ipfs_hash)
-            except Exception as e:
-                raise LoggedBasicException(f" {type(e)}, {e}")
-
-        except:
-            try:
-                logger.info(f"Failed to import profile from database checking against blockchain with {ipfs_hash}")
-                self.address = address
-                if not ipfs_hash:
-                    self.ipfs_hash = self.find_latest_profile()["message"]
-                else:
-                    self.ipfs_hash = ipfs_hash
-                self.picture = None
-                self.profile_picture = None
                 self.validate(self.ipfs_hash)
-            except:
-                try:
-                    self.picture = ipfs.cat(self.profile_picture)
-                except AttributeError:
-                    # Fails if there is no photo or is doesn't work.
-                    self.picture = ipfs.cat("QmcbpiAD84yYUs48ftHZS2smRMqsUpPcYamoqh7pHjBzfg")
-                    self.profile_picture = "QmcbpiAD84yYUs48ftHZS2smRMqsUpPcYamoqh7pHjBzfg"
-                    pass
-                except ipfs_exceptions.ErrorResponse:
-                    self.picture = ipfs.cat("QmcbpiAD84yYUs48ftHZS2smRMqsUpPcYamoqh7pHjBzfg")
-                    self.profile_picture = "QmcbpiAD84yYUs48ftHZS2smRMqsUpPcYamoqh7pHjBzfg"
-                    pass
+            except Exception as e:
+                logger.info(f"Exception  {type(e)}: {str(e)} ")
+                raise Exception(e)
+        except Exception as e:
+            logger.info(f"profile failed with {type(e)}: {str(e)} falling back")
+            try:
+                self.picture = ipfs.cat(self.profile_picture)
+            except AttributeError:
+                # Fails if there is no photo or is doesn't work.
+                self.picture = ipfs.cat("QmcbpiAD84yYUs48ftHZS2smRMqsUpPcYamoqh7pHjBzfg")
+                self.profile_picture = "QmcbpiAD84yYUs48ftHZS2smRMqsUpPcYamoqh7pHjBzfg"
+                pass
+            except ipfs_exceptions.ErrorResponse:
+                self.picture = ipfs.cat("QmcbpiAD84yYUs48ftHZS2smRMqsUpPcYamoqh7pHjBzfg")
+                self.profile_picture = "QmcbpiAD84yYUs48ftHZS2smRMqsUpPcYamoqh7pHjBzfg"
+                pass
 
     def __getattr__(self, name):
         logger.info(f"attribute lookup in {self.address} for {name}")
         if name.startswith('__') and name.endswith('__'):
             # Python internal stuff
-            raise AttributeError
+            raise AttributeError(f"Error finding {name}")
 
         if name in self.__dict__:
+            logger.info(f"returning attribute {self.__dict__[name]}")
             return self.__dict__[name]
         else:
-            raise AttributeError
+            raise AttributeError(f"Error finding {name}")
 
     def validate(self, ipfs_hash):
         try:
             data = json.loads(ipfs.cat(ipfs_hash))
-            logger.info(f"validating {ipfs_hash} data is {data}")
+            # need to get proxied messages here
+            logger.info(f"*********validating {type(data)} {data} from {ipfs_hash}")
+            if "contents" in data and ("sender" in data or "address" in data) and "metadata_signature" in data:
+                logger.info(f"validating as proxied profile")
+                params = {'ipfs_hash': ipfs_hash}
+                url = 'http://127.0.0.1:8081/api/verify_proxied'
+                r = requests.post(url, params=params)
+                logger.info(f"{r.text}, {r.status_code}")
+                if "True" in r.text:
+                    data = json.loads(json.loads(ipfs.cat(ipfs_hash))["contents"])
+                    logger.info(f"returning {data} from proxied message")
+                    try:
+                        data["address"] = data["sender"]
+                    except KeyError:
+                        data["sender"] = data["address"]
+                    data["proxied"] = True
+                else:
+                    raise squawker_errors.NoProfile(f"No profile in ipfs hash {ipfs_hash}")
             for key in data:
+                logger.info(f"adding {key}")
                 self.__dict__[key] = data[key]
         except json.decoder.JSONDecodeError:
             raise squawker_errors.InvalidProfileJSON(f"{ipfs_hash} did not decode")
-
-
         try:
-            self.picture = ipfs.cat(self.profile_picture)
+            logger.info(f"trying to set the picture with {self.profile_picture}")
+            # self.picture = ipfs.cat(self.profile_picture)
+
         except AttributeError:
             # Fails if there is no photo or is doesn't work.
             self.picture = ipfs.cat("QmcbpiAD84yYUs48ftHZS2smRMqsUpPcYamoqh7pHjBzfg")
@@ -86,6 +93,7 @@ class Profile():
             self.picture = ipfs.cat("QmcbpiAD84yYUs48ftHZS2smRMqsUpPcYamoqh7pHjBzfg")
             self.profile_picture = "QmcbpiAD84yYUs48ftHZS2smRMqsUpPcYamoqh7pHjBzfg"
             pass
+        logger.info(f"validated profile {ipfs_hash} for {self.address}")
 
     def find_latest_profile(self):
         latest = []
@@ -103,6 +111,14 @@ class Profile():
                         kaw = {"address": vout["addresses"], "message": vout["asset"]["message"],
                                "block": transaction["locktime"]}
                         latest.append(kaw)
+        if len(latest) <= 0:
+            logger.info(f"didn't find profile directly from the address checking against proxied profiles")
+            latest_proxied_profiles = find_latest_flags(asset=ASSETNAME, satoshis=10500000)
+            for tx in latest_proxied_profiles:
+                logger.info(f"looking at {tx} for {tx['message']}")
+                logger.info(f"proxied message is {ipfs.cat(str(tx['message']))}")
+                if str(self.address) in str(ipfs.cat(str(tx["message"]))):
+                    latest.append(tx)
         return sorted(latest[:1], key=lambda message: message["block"], reverse=True)[0]
 
 

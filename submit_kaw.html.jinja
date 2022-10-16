@@ -1,0 +1,96 @@
+{% extends "base.html.jinja" %}
+{% block title %}Squawker{% endblock %}
+{% block content %}
+
+
+<form method="POST" action="https://squawker.app/api/proxy">
+    {{ form.csrf_token }}
+    {{ form.sender(cols=81, readonly='true', hidden='true') }} <br />
+    {{ form.kaw.label }}<br />
+    {{ form.kaw(cols=81, rows=6) }}<br>
+    {{ form.media.label }}<br> {{ form.media(readonly='true') }}<br>
+    {{ form.jsonString(hidden='true') }}
+    {{ form.signature_hash.label }}<br /> {{ form.signature_hash(cols=81, hidden='true') }}<br />
+    {{ form.signature.label }}<br /> {{ form.signature(cols=81, hidden='true') }}<br />
+
+</form>
+<button id="kaw_btn"> KAW!</button><button id="send_signed" disabled> Send Signed KAW!</button>
+
+<script type="text/javascript">
+document.getElementById('kaw').addEventListener("change",sha256);
+document.getElementById('signature').addEventListener("change",update_json);
+
+async function sha256() {
+  var field1 = document.getElementById('sender').value;
+  var field2 = document.getElementById('kaw').value.replace(/\n/g, "\\n");
+
+    if(field1 != "" && field2 != ""){
+      var jsonString = '{"sender": "' + field1 + '", "message": "' + field2 + '", "media": [] }';
+
+      document.getElementById('jsonString').value = jsonString;
+      console.log(jsonString);
+    }
+}
+
+function update_json() {
+  var field1 = document.getElementById('kaw').value
+  var obj = JSON.parse(field1);
+  obj.metadata_signature.signature.value = document.getElementById('signature').value;
+  field1 = JSON.stringify(obj, undefined, 2);
+}
+
+
+
+kaw_btn.onclick = async (e) => {
+        let response = await fetch('https://squawker.app/api/proxy_sign', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(document.getElementById('jsonString').value)
+        })
+
+        let text = await response.text(); // read response body as text
+        alert(text);
+<!--        var content = document.getElementById('kaw')-->
+<!--        content.value = text;-->
+<!--        // make kaw field read only-->
+<!--        content.readOnly = true;-->
+<!--        // display json returned as text in content field-->
+<!--        var obj = JSON.parse(text)-->
+<!--        content.value = JSON.stringify(obj, undefined, 2);-->
+<!--        // fill in/display signature hash field-->
+<!--        hash = document.getElementById('signature_hash');-->
+<!--        hash.style.visibility = 'visible';-->
+<!--        hash.value = obj.metadata_signature.signature_hash;-->
+<!--        // unhide signature field-->
+<!--        document.getElementById('signature').style.visibility = 'visible';-->
+<!--        document.getElementById('send_signed').disabled = false;-->
+    };
+
+send_signed.onclick = async (e) => {
+        let response = await fetch('https://squawker.app/api/proxy', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(document.getElementById('kaw').value)
+        })
+
+        let text = await response.text(); // read response body as text
+        var obj = JSON.parse(text);
+        if (obj.sent) {
+          window.location.href = obj.location;
+        } else { alert(obj.error); }
+    };
+
+</script>
+
+
+{% endblock %}
+{% block leftcolumn %}
+{% include "wallet.html.jinja" %}
+{% endblock %}
+{% block rightcolumn %}
+{% include "sidebar.html.jinja" %}
+{% endblock %}
