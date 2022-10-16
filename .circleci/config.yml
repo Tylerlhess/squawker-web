@@ -10,14 +10,13 @@ jobs:
       - image: cimg/python:3.9.4
     steps:
       - checkout
-      - run:
-          command:
-            - pip install -r requirements/requirements.txt
-            - python app.py
+      - run: pip install -r requirements.txt
+      - run: python app.py
+            
 
 # Invoke jobs via workflows
 # See: https://circleci.com/docs/2.0/configuration-reference/#workflows
 workflows:
-  main:
+  say-hello-workflow:
     jobs:
       - build
