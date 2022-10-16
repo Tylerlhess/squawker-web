@@ -1,2 +1,7 @@
-ravenrpc
+ravenrpc~=0.2.4
 ipfshttpclient==0.8.0a2
+
+requests~=2.27.1
+Flask~=2.2.2
+WTForms~=3.0.1
+psycopg2~=2.9.4
