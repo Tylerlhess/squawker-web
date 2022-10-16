@@ -1,4 +1,4 @@
-credentials.py
+credentials*.py
 venv/*
 .idea/*
 /dbconn.py
