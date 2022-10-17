@@ -1,8 +1,12 @@
-from ServerEssentials.credentials1 import DBUSER, DBNAME, DBPASS
 import psycopg2
 import logging
 from Utils.squawker_errors import NotRegistered, NoProfile, AlreadyRegistered
 from psycopg2.extras import DictCursor
+
+try:
+    from ServerEssentials.credentials1 import DBUSER, DBNAME, DBPASS
+except:
+    from ServerEssentials.test_credentials import DBUSER, DBNAME, DBPASS
 
 logger = logging.getLogger('squawker_db')
 logger.setLevel(logging.DEBUG)
