@@ -1,7 +1,7 @@
 from ServerEssentials.serverside import *
 import logging
 import inspect
-from bip39 import BIP39WORDLIST
+from Utils.bip39 import BIP39WORDLIST
 import random
 
 

@@ -1,9 +1,10 @@
-from json_profile import Profile
-from json_message import Message
+from Json_modules.json_profile import Profile
+from Json_modules.json_message import Message
 from Utils import squawker_errors
 from Utils.utils import get_logger
 import datetime
 from dbconn import Conn
+
 
 logger = get_logger("blog")
 

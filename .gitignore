@@ -2,3 +2,4 @@ ServerEssentials/credentials*.py
 venv/*
 .idea/*
 /dbconn.py
+./*.log

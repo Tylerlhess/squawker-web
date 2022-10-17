@@ -1,9 +1,10 @@
 from ravenrpc import Ravencoin
 import ipfshttpclient
+
 try:
     from credentials1 import USER, PASSWORD
 except:
-    from test_credentials import USER, PASSWORD
+    from ServerEssentials.test_credentials import USER, PASSWORD
 
 try:
     rvn = Ravencoin(USER, PASSWORD, port=8766)
@@ -17,7 +18,7 @@ except:
 try:
     ipfs = ipfshttpclient.connect()
 except:
-    ipfs = None
+    ipfs = ipfshttpclient.connect("/dns/squawker.app/tcp/8080/http")
 
 ASSETNAME = "SQUAWKER"
 IPFSDIRPATH = "/opt/squawker/ipfs"

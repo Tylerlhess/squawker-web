@@ -1,4 +1,4 @@
-from json_profile import Profile
+from Json_modules.json_profile import Profile
 from Utils.utils import get_logger
 from dbconn import Conn
 from xml.sax.saxutils import escape

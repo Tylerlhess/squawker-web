@@ -1,60 +1,17 @@
-references:
-  my-build-image: &my-build-image
-    circleci/classic:latest
-
+# Use the latest 2.1 version of CircleCI pipeline process engine.
+# See: https://circleci.com/docs/2.0/configuration-reference
 version: 2.1
 
 # Define a job to be invoked later in a workflow.
 # See: https://circleci.com/docs/2.0/configuration-reference/#jobs
 jobs:
   build:
-    machine:
-      image: *my-build-image
-
-    working_directory: /home/circleci/
+    docker:
+      - image: cimg/python:3.9.4
     steps:
-      - run:
-          name: Install Python
-          command: |
-            add-apt-repository ppa:deadsnakes/ppa
-            apt-get update
-            apt-get install software-properties-common libssl1.1 python3.9 python3-pip
-      - run:
-          name: Install Docker
-          command: |
-            set -x
-            VER="18.03.1-ce"
-            curl -L -o /tmp/docker-$VER.tgz https://download.docker.com/linux/static/stable/x86_64/docker-$VER.tgz
-            tar -xz -C /tmp -f /tmp/docker-$VER.tgz
-            sudo mv /tmp/docker/* /usr/bin
-      - run:
-          name: Install IPFS
-          command: |
-            set -x
-            wget https://dist.ipfs.io/go-ipfs/v0.4.14/go-ipfs_v0.4.14_linux-amd64.tar.gz -O /tmp/go-ipfs.tar.gz
-            cd /tmp
-            tar xvfz go-ipfs.tar.gz
-            sudo cp go-ipfs/ipfs /home/circleci/bin/
-            ipfs version
-      - run:
-          name: Run IPFS daemon
-          command: |
-            ipfs init
-            ipfs config Addresses.API /ip4/0.0.0.0/tcp/5001
-            ipfs config Addresses.Gateway /ip4/0.0.0.0/tcp/9001
-            ipfs daemon &
-      - run:
-          name: Configure Docker Daemon
-          command: |
-            export IP=$(ifconfig | grep eth0 -A 5 | grep addr:1 | awk {'print $2'} | sed -e "s/addr://")
-            echo "{ \"insecure-registries\": [ \"$IP:5000\" ] }" | sudo tee /etc/docker/daemon.json
-            sudo service docker restart
-
       - checkout
-
       - run: pip install -r requirements.txt
-
-      - run: python3 app.py
+      - run: python app.py
             
 
 # Invoke jobs via workflows

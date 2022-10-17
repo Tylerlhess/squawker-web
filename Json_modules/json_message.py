@@ -1,6 +1,6 @@
 import json
 from Utils.utils import get_logger
-from json_profile import Profile
+from Json_modules.json_profile import Profile
 from dbconn import Conn
 
 logger = get_logger('squawker_message')
