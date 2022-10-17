@@ -2,7 +2,6 @@ import requests, json
 from flask import Flask, request, redirect, session, render_template
 from Utils.utils import *
 from market import Listing
-from ServerEssentials.credentials import SITE_SECRET_KEY, site_url
 from dbconn import Conn
 from Utils.forms import *
 from Web_modules.web_account import Account
@@ -12,7 +11,10 @@ from Json_modules.json_blog import Article
 from Utils.squawker_errors import *
 from Json_modules.json_rss import rss
 
-
+try:
+    from ServerEssentials.credentials import SITE_SECRET_KEY, site_url
+except:
+    from ServerEssentials.test_credentials import SITE_SECRET_KEY,  site_url
 
 app = Flask(__name__)
 
