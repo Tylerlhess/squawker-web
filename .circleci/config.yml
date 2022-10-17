@@ -1,6 +1,6 @@
 references:
   my-build-image: &my-build-image
-    cimg/python:3.9.4-buster
+    circleci/python:3.9.4-buster
 
 version: 2.1
 
