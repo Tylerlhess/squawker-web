@@ -1,0 +1,32 @@
+<div id="cns_accordion">
+
+    {% for cns in messages %}
+    <div class="card mt-3 rounded bg-black shadow p-1">
+        <div class="card-head bg-primary rounded-top p-1">
+            <a class="collapsed btn shadow" data-bs-toggle="collapse" href="#collapse{{ cns['domain'] }}">
+                {{ cns['domain'] }}
+            </a>
+        </div>
+        <div id="collapse{{ cns['domain'] }}" class="collapse bg-secondary" data-bs-parent="#accordion">
+            <div class="card-body">
+                {% for record in cns %}
+                {{ record }} {{ cns[record] }}
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+        {% if loop.cycle(False, False, True, False, False)  %}
+            <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-0684497438635003"
+     crossorigin="anonymous"></script>
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-format="fluid"
+     data-ad-layout-key="-gh-2h-2s-4o+12g"
+     data-ad-client="ca-pub-0684497438635003"
+     data-ad-slot="3857153910"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+        {% endif %}
+    {% endfor %}
+</div>
