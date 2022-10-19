@@ -4,7 +4,6 @@ from Utils.utils import *
 from market import Listing
 from dbconn import Conn
 from Utils.forms import *
-from Web_modules.web_account import Account
 from Json_modules.json_message import Message
 from Json_modules.json_profile import Profile
 from Json_modules.json_blog import Article
@@ -139,7 +138,6 @@ def edit_profile():
             for key in session['profile']['keys']:
                 logger.info(f"updating session {key} with session_data key {session_data}")
                 session[key] = session_data[key]
-            Account(session['email']).update_profile(profile_dict=session_data)
             return redirect(site_url)
         return render_template('edit_profile.html.jinja', base_url=site_url, kawForm=kawForm, articleForm=articleForm, profile_form=proForm, loginForm=loginForm)
     except KeyError:
