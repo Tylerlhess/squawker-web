@@ -16,6 +16,7 @@ logger.addHandler(handler2)
 
 debug = 0
 
+
 def tx_to_self(tx, size=1.00):
     messages = dict()
     messages["addresses"] = [tx["address"]]
@@ -172,6 +173,7 @@ def find_input_value(tx):
         return False, details['value']
     if details['value'] == 0:
         return True, details['scriptPubKey']['asset']['amount']
+
 
 def find_inputs(address, asset_quantity, current_asset):
     utxos = rvn.getaddressutxos({"addresses": [address], "assetName": current_asset})['result']
