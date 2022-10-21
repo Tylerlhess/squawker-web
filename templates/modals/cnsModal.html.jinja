@@ -1,22 +1,22 @@
 <div class="modal-body">
-<form id="dns_form" >
-    {{ dbs_form.csrf_token }}
-    {{ dns_form.jsonString(hidden='true') }}
-    {{ dns_form.address.label }}
+<form id="cnsForm" >
+    {{ cnsForm.csrf_token }}
+    {{ cnsForm.jsonString(hidden='true') }}
+    {{ cnsForm.address.label }}
     {%- if session["address"] -%}
     {{ session["address"] }} <br />
     {% else %}
-    {{ dns_form.address(style="width: 75%") }} <br />
+    {{ cnsForm.address(style="width: 75%") }} <br />
     {%- endif -%}
-    {{ dns_form.domain.label }} {{ dns_form.domain(style="width: 75%") }}<br>
-    {{ dns_form.aRecord.label }} {{ dns_form.aRecord(style="width: 75%") }}<br>
-    {{ dns_form.aaaaRecord.label }} {{ dns_form.aaaaRecord(style="width: 75%") }}<br>
-    {{ dns_form.cName.label }} {{ dns_form.cName(type="text", style="width: 75%", rows=6, wrap=true) }}<br>
-    {{ dns_form.mxRecord.label }} {{ dns_form.mxRecord(type="text", style="width: 75%", rows=6, wrap=true) }}<br>
-    {{ dns_form.txtRecords.label }} {{ dns_form.txtRecords(type="text", style="width: 75%", rows=6, wrap=true) }}<br>
-    {{ dns_form.extraFields(hidden=true) }}
-    {{ dns_form.signature_hash.label }} {{ dns_form.signature_hash(hidden=true) }}<br/>
-    {{ dns_form.signature.label }} {{ dns_form.signature(hidden=true) }}<br/>
+    {{ cnsForm.domain.label }} {{ cnsForm.domain(style="width: 75%") }}<br>
+    {{ cnsForm.aRecord.label }} {{ cnsForm.aRecord(style="width: 75%") }}<br>
+    {{ cnsForm.aaaaRecord.label }} {{ cnsForm.aaaaRecord(style="width: 75%") }}<br>
+    {{ cnsForm.cName.label }} {{ cnsForm.cName(type="text", style="width: 75%", rows=6, wrap=true) }}<br>
+    {{ cnsForm.mxRecord.label }} {{ cnsForm.mxRecord(type="text", style="width: 75%", rows=6, wrap=true) }}<br>
+    {{ cnsForm.txtRecords.label }} {{ cnsForm.txtRecords(type="text", style="width: 75%", rows=6, wrap=true) }}<br>
+    {{ cnsForm.extraFields(hidden=true) }}
+    {{ cnsForm.signature_hash.label }} {{ cnsForm.signature_hash(hidden=true) }}<br/>
+    {{ cnsForm.signature.label }} {{ cnsForm.signature(hidden=true) }}<br/>
 
 </form>
 
@@ -36,7 +36,7 @@ addy.readOnly = true;
 {% endif %}
 
 function update_json() {
-  const form = document.getElementById('dns_form');
+  const form = document.getElementById('cnsForm');
   const fd = new FormData();
   const props = {};
   for (let element of form.elements) {
