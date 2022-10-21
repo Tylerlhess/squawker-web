@@ -68,7 +68,7 @@
   </div>
 </div>
 
-<div class="modal" id="dnsModal" tabindex="-1">
+<div class="modal" id=cnsModal" tabindex="-1">
   <div class="modal-dialog">
     <div class="modal-content bg-primary shadow p-1">
       <div class="modal-header">
@@ -76,7 +76,7 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
 
-    {% include "dnsModal.html.jinja" %}
+    {% include "cnsModal.html.jinja" %}
 
     </div>
   </div>
@@ -164,28 +164,28 @@ window.onclick = function(event) {
 
 
 // Get the modal
-var dnsModal = document.getElementById("dnsModal");
+var cnsModal = document.getElementById("cnsModal");
 
 // Get the button that opens the modal
-var dnsBtn = document.getElementById("dnsBtn");
+var cnsBtn = document.getElementById("cnsBtn");
 
 // Get the <span> element that closes the modal
-var dnsSpan = document.getElementsByClassName("btn-close")[2];
+var cnsSpan = document.getElementsByClassName("btn-close")[2];
 
 // When the user clicks on the button, open the modal
-dnsBtn.onclick = function() {
-  dnsModal.style.display = "block";
+cnsBtn.onclick = function() {
+  cnsModal.style.display = "block";
 }
 
 // When the user clicks on <span> (x), close the modal
-dnsSpan.onclick = function() {
-  dnsModal.style.display = "none";
+cnsSpan.onclick = function() {
+  cnsModal.style.display = "none";
 }
 
 // When the user clicks anywhere outside of the modal, close it
 window.onclick = function(event) {
-  if (event.target == dnsModal) {
-    dnsModal.style.display = "none";
+  if (event.target == cnsModal) {
+    cnsModal.style.display = "none";
   }
 }
 
