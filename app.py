@@ -85,44 +85,44 @@ def message(message_address):
     return str(msg)
 
 
-# @app.route('/login', methods=['POST', 'GET'])
-# def login():
-#     """The function to login"""
-#     session["site_url"] = site_url
-# 
-#     kawForm = SendKaw()
-#     articleForm = PublishArticle()
-#     proForm = EditProfile()
-#     loginForm = Login()
-#     cnsForm = CNSRecord()
-#     if "signstring" not in session:
-#         session["signstring"] = gen_signstring()
-# 
-#     if request.method == 'POST' and loginForm.validate():
-#         params = {'jsonRequest': json.dumps(loginForm.data)}
-#         url = 'http://127.0.0.1:8081/api/verify_sig'
-#         r = requests.post(url, params=params)
-#         logger.info(f"{r.text}, {r.status_code}")
-#         if "True" in r.text:
-#             session["site_url"] = site_url
-#             session["address"] = loginForm["address"]
-#             profile = Profile(str(session['address']))
-#             for atb in profile.__dict__:
-#                 if atb == "picture":
-#                     session["profile_picture"] = profile.profile_picture
-#                 elif atb == "name":
-#                     session["name"] = profile.name
-#                 elif atb == "address":
-#                     pass
-#                 else:
-#                     if "others" not in session:
-#                         session["others"] = dict()
-#                     if not callable(atb):
-#                         session["others"][atb] = profile.__dict__[atb]
-# 
-#         return redirect(site_url)
-# 
-#     return render_template("login_page.html.jinja", base_url=site_url, loginForm=loginForm, kawForm=kawForm, articleForm=articleForm, profile_form=proForm, cnsForm=cnsForm)
+@app.route('/login', methods=['POST', 'GET'])
+def login():
+    """The function to login"""
+    session["site_url"] = site_url
+
+    kawForm = SendKaw()
+    articleForm = PublishArticle()
+    proForm = EditProfile()
+    loginForm = Login()
+    cnsForm = CNSRecord()
+    if "signstring" not in session:
+        session["signstring"] = gen_signstring()
+
+    if request.method == 'POST' and loginForm.validate():
+        params = {'jsonRequest': json.dumps(loginForm.data)}
+        url = 'http://127.0.0.1:8081/api/verify_sig'
+        r = requests.post(url, params=params)
+        logger.info(f"{r.text}, {r.status_code}")
+        if "True" in r.text:
+            session["site_url"] = site_url
+            session["address"] = loginForm["address"]
+            profile = Profile(str(session['address']))
+            for atb in profile.__dict__:
+                if atb == "picture":
+                    session["profile_picture"] = profile.profile_picture
+                elif atb == "name":
+                    session["name"] = profile.name
+                elif atb == "address":
+                    pass
+                else:
+                    if "others" not in session:
+                        session["others"] = dict()
+                    if not callable(atb):
+                        session["others"][atb] = profile.__dict__[atb]
+
+        return redirect(site_url)
+
+    return render_template("login_page.html.jinja", base_url=site_url, loginForm=loginForm, kawForm=kawForm, articleForm=articleForm, profile_form=proForm, cnsForm=cnsForm)
 
 
 @app.route("/logout")
