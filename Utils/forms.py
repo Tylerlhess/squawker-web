@@ -78,6 +78,7 @@ class CNSRecord(FlaskForm):
     txtRecords = TextAreaField("txt records")
     signature_hash = StringField('Signature Hash')
     signature = StringField('Signature')
+    jsonString = StringField('jsonString')
 
 
 ALL_FORMS = {
