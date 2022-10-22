@@ -68,6 +68,7 @@ function sign_json() {
 
 
 prep-cns-btn.onclick = async (e) => {
+        alert("trying to update json")
         update_json();
         let response = await fetch("{{ base_url }}/api/proxy_sign", {
                 method: 'POST',
