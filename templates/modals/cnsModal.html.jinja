@@ -21,7 +21,7 @@
 
 </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-dark" id="prep-btn">Prepare Signature</button>
+        <button type="button" class="btn btn-dark" id="prep-cns-btn">Prepare Signature</button>
         <button type="button" class="btn btn-dark" id="dns_send_signed" disabled>Submit to blockchain</button>
 </div>
 <script type="text/javascript">
@@ -67,7 +67,7 @@ function sign_json() {
 }
 
 
-prep_btn.onclick = async (e) => {
+prep-cns-btn.onclick = async (e) => {
         update_json();
         let response = await fetch("{{ base_url }}/api/proxy_sign", {
                 method: 'POST',
