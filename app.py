@@ -39,6 +39,7 @@ def index():
     proForm = EditProfile()
     loginForm = Login()
 
+    
     session["site_url"] = site_url
     logger.info(f'Session started with {session} in index')
     if "signstring" not in session:
@@ -55,6 +56,7 @@ def user(rvn_address):
     proForm = EditProfile()
     loginForm = Login()
 
+    
     usr = Profile(rvn_address).html()
     #return str(usr)
     return render_template("user.html.jinja", profile=usr, kawForm=kawForm, articleForm=articleForm, profile_form=proForm, loginForm=loginForm)
@@ -66,6 +68,7 @@ def profile(rvn_address):
     proForm = EditProfile()
     loginForm = Login()
 
+    
     usr = Profile(rvn_address).html()
     return render_template("profile.html.jinja", profile=usr, kawForm=kawForm, articleForm=articleForm, profile_form=proForm, loginForm=loginForm)
 
@@ -76,6 +79,7 @@ def message(message_address):
     proForm = EditProfile()
     loginForm = Login()
 
+    
     msg = Message(message_address)
     return str(msg)
 
@@ -89,6 +93,7 @@ def login():
     articleForm = PublishArticle()
     proForm = EditProfile()
     loginForm = Login()
+
     if "signstring" not in session:
         session["signstring"] = gen_signstring()
 
@@ -125,52 +130,53 @@ def logout():
     return redirect(site_url)
 
 
-@app.route('/update_profile', methods=['GET', 'POST'])
-def edit_profile():
-    try:
-        kawForm = SendKaw()
-        articleForm = PublishArticle()
-        proForm = EditProfile()
-        loginForm = Login()
+# @app.route('/update_profile', methods=['GET', 'POST'])
+# def edit_profile():
+#     try:
+#         kawForm = SendKaw()
+#         articleForm = PublishArticle()
+#         proForm = EditProfile()
+#         loginForm = Login()
+#
+# 
+#         logger.info(f"Form values = {form.data}")
+#         if request.method == 'POST' and form.validate():
+#             for key in session['profile']['keys']:
+#                 logger.info(f"updating session {key} with session_data key {session_data}")
+#                 session[key] = session_data[key]
+#             return redirect(site_url)
+#         return render_template('edit_profile.html.jinja', base_url=site_url, kawForm=kawForm, articleForm=articleForm, profile_form=proForm, loginForm=loginForm)
+#     except KeyError:
+#         return redirect(f'{site_url}/login')
 
-        logger.info(f"Form values = {form.data}")
-        if request.method == 'POST' and form.validate():
-            for key in session['profile']['keys']:
-                logger.info(f"updating session {key} with session_data key {session_data}")
-                session[key] = session_data[key]
-            return redirect(site_url)
-        return render_template('edit_profile.html.jinja', base_url=site_url, kawForm=kawForm, articleForm=articleForm, profile_form=proForm, loginForm=loginForm)
-    except KeyError:
-        return redirect(f'{site_url}/login')
 
-
-@app.route('/market', methods=['GET','POST'])
-def market():
-    kawForm = SendKaw()
-    articleForm = PublishArticle()
-    proForm = EditProfile()
-    loginForm = Login()
-
-    form = MarketAsset()
-    logger.info(f"market form data is {form.data['asset']}")
-    if request.method == 'POST' and form.validate():
-        latest_listings = find_latest_flags(form.data["asset"], satoshis=20000000)
-        listings = []
-        for l in latest_listings:
-            try:
-                listings.append(Listing(l).html())
-            except:
-                pass
-        return render_template("market.html.jinja", listings=listings, form=form, kawForm=kawForm, articleForm=articleForm, profile_form=proForm, loginForm=loginForm)
-    else:
-        latest_listings = find_latest_flags("SQUAWKER", satoshis=20000000)
-        listings = []
-        for l in latest_listings:
-            try:
-                listings.append(Listing(l).html())
-            except:
-                pass
-        return render_template("market.html.jinja", listings=listings, form=form, kawForm=kawForm, articleForm=articleForm, profile_form=proForm, loginForm=loginForm)
+# @app.route('/market', methods=['GET','POST'])
+# def market():
+#     kawForm = SendKaw()
+#     articleForm = PublishArticle()
+#     proForm = EditProfile()
+#     loginForm = Login()
+# 
+#     form = MarketAsset()
+#     logger.info(f"market form data is {form.data['asset']}")
+#     if request.method == 'POST' and form.validate():
+#         latest_listings = find_latest_flags(form.data["asset"], satoshis=20000000)
+#         listings = []
+#         for l in latest_listings:
+#             try:
+#                 listings.append(Listing(l).html())
+#             except:
+#                 pass
+#         return render_template("market.html.jinja", listings=listings, form=form, kawForm=kawForm, articleForm=articleForm, profile_form=proForm, loginForm=loginForm)
+#     else:
+#         latest_listings = find_latest_flags("SQUAWKER", satoshis=20000000)
+#         listings = []
+#         for l in latest_listings:
+#             try:
+#                 listings.append(Listing(l).html())
+#             except:
+#                 pass
+#         return render_template("market.html.jinja", listings=listings, form=form, kawForm=kawForm, articleForm=articleForm, profile_form=proForm, loginForm=loginForm)
 
 
 @app.route('/AET', methods=['GET'])
@@ -180,19 +186,21 @@ def AET():
     proForm = EditProfile()
     loginForm = Login()
 
+
     form = AETRedemption()
-    return render_template("submit_AET_tag_redemption.html.jinja", base_url=site_url, form=form, kawForm=kawForm, articleForm=articleForm, profile_form=proForm, loginForm=loginForm)
+    return render_template("extend_base/submit_AET_tag_redemption.html.jinja", base_url=site_url, form=form, kawForm=kawForm, articleForm=articleForm, profile_form=proForm, loginForm=loginForm)
 
 
-@app.route('/KAW', methods=['GET'])
-def KAW():
-    kawForm = SendKaw()
-    articleForm = PublishArticle()
-    proForm = EditProfile()
-    loginForm = Login()
-
-    form = SendKaw()
-    return render_template("submit_kaw.html.jinja", base_url=site_url, form=form, kawForm=kawForm, articleForm=articleForm, profile_form=proForm, loginForm=loginForm)
+# @app.route('/KAW', methods=['GET'])
+# def KAW():
+#     kawForm = SendKaw()
+#     articleForm = PublishArticle()
+#     proForm = EditProfile()
+#     loginForm = Login()
+#
+#
+#     form = SendKaw()
+#     return render_template("extend_base/submit_kaw.html.jinja", base_url=site_url, form=form, kawForm=kawForm, articleForm=articleForm, profile_form=proForm, loginForm=loginForm)
 
 
 @app.route('/reply/<reply_txid>', methods=['GET'])
@@ -204,6 +212,7 @@ def reply(reply_txid):
     proForm = EditProfile()
     loginForm = Login()
 
+
     try:
         kaw = conn.get_kaw(reply_txid)
         logger.info(f"{kaw} is the kaw in reply")
@@ -214,18 +223,19 @@ def reply(reply_txid):
         art["text"] = art["article_title"]
         logger.info(f"{art} is the current article")
         messages = [Message(art).html()]
-    return render_template("reply_to_kaw.html.jinja", base_url=site_url, form=form, messages=messages, reply_txid=reply_txid, kawForm=kawForm, articleForm=articleForm, profile_form=proForm, loginForm=loginForm)
+    return render_template("extend_base/reply_to_kaw.html.jinja", base_url=site_url, form=form, messages=messages, reply_txid=reply_txid, kawForm=kawForm, articleForm=articleForm, profile_form=proForm, loginForm=loginForm)
 
 
-@app.route('/publish', methods=['GET', 'POST'])
-def publish():
-    kawForm = SendKaw()
-    articleForm = PublishArticle()
-    proForm = EditProfile()
-    loginForm = Login()
-
-    form = PublishArticle()
-    return render_template("submit_blog.html.jinja", base_url=site_url, form=form, kawForm=kawForm, articleForm=articleForm, profile_form=proForm, loginForm=loginForm)
+# @app.route('/publish', methods=['GET', 'POST'])
+# def publish():
+#     kawForm = SendKaw()
+#     articleForm = PublishArticle()
+#     proForm = EditProfile()
+#     loginForm = Login()
+#
+# 
+#     form = PublishArticle()
+#     return render_template("submit_blog.html.jinja", base_url=site_url, form=form, kawForm=kawForm, articleForm=articleForm, profile_form=proForm, loginForm=loginForm)
 
 
 @app.route("/blog_posts", methods=['GET'])
@@ -235,13 +245,14 @@ def blogs():
     proForm = EditProfile()
     loginForm = Login()
 
+
     session["site_url"] = site_url
     logger.info(f'Session started with {session} in blog_posts')
     if "signstring" not in session:
         session["signstring"] = gen_signstring()
     conn = Conn()
     articles = [Article(blog["address"], blog["ipfs_hash"]).short_html() for blog in conn.get_blogs()]
-    return render_template("index2.html.jinja", base_url=site_url, articles=articles, kawForm=kawForm, articleForm=articleForm, profile_form=proForm, loginForm=loginForm)
+    return render_template("extend_base/index2.html.jinja", base_url=site_url, articles=articles, kawForm=kawForm, articleForm=articleForm, profile_form=proForm, loginForm=loginForm)
 
 
 @app.route("/article/<address>/<article_hash>", methods=['GET'])
@@ -251,12 +262,13 @@ def article(address, article_hash):
     proForm = EditProfile()
     loginForm = Login()
 
+
     art = Article(address, article_hash).html()
     session["site_url"] = site_url
     logger.info(f'Session started with {session} in article')
     if "signstring" not in session:
         session["signstring"] = gen_signstring()
-    return render_template("article.html.jinja", base_url=site_url, article=art, kawForm=kawForm, articleForm=articleForm, profile_form=proForm, loginForm=loginForm)
+    return render_template("extend_base/article.html.jinja", base_url=site_url, article=art, kawForm=kawForm, articleForm=articleForm, profile_form=proForm, loginForm=loginForm)
 
 
 @app.route("/kaws", methods=['GET'])
@@ -266,6 +278,7 @@ def kaws():
     proForm = EditProfile()
     loginForm = Login()
 
+
     session["site_url"] = site_url
     logger.info(f'Session started with {session}')
     if "signstring" not in session:
@@ -273,7 +286,7 @@ def kaws():
     conn = Conn()
     messages = [Message(msg).html() for msg in conn.get_kaws()]
 
-    return render_template("view_kaws.html.jinja", base_url=site_url, messages=messages, kawForm=kawForm, articleForm=articleForm, profile_form=proForm, loginForm=loginForm)
+    return render_template("extend_base/view_kaws.html.jinja", base_url=site_url, messages=messages, kawForm=kawForm, articleForm=articleForm, profile_form=proForm, loginForm=loginForm)
 
 
 @app.route("/sent/<txid>", methods=['GET'])
@@ -283,12 +296,13 @@ def sent(txid):
     proForm = EditProfile()
     loginForm = Login()
 
+
     session["site_url"] = site_url
     logger.info(f'Session started with {session}')
     if "signstring" not in session:
         session["signstring"] = gen_signstring()
     conn = Conn()
-    return render_template("followup.html.jinja", base_url=site_url, txid=txid, kawForm=kawForm, articleForm=articleForm, profile_form=proForm, loginForm=loginForm)
+    return render_template("extend_base/followup.html.jinja", base_url=site_url, txid=txid, kawForm=kawForm, articleForm=articleForm, profile_form=proForm, loginForm=loginForm)
 
 
 @app.route("/like/<txid>/<sender>", methods=['GET'])
@@ -298,8 +312,10 @@ def like(txid, sender):
     proForm = EditProfile()
     loginForm = Login()
 
-    return render_template("like.html.jinja", base_url=site_url, txid=txid, sender=sender, kawForm=kawForm, articleForm=articleForm, profile_form=proForm, loginForm=loginForm)
+
+    return render_template("extend_base/like.html.jinja", base_url=site_url, txid=txid, sender=sender, kawForm=kawForm, articleForm=articleForm, profile_form=proForm, loginForm=loginForm)
 
 @app.route("/rss/<address>")
 def get_rss(address):
     return app.response_class(rss(address), mimetype='application/xml')
+

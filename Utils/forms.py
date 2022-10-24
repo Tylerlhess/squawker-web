@@ -68,17 +68,6 @@ class PublishArticle(FlaskForm):
     media = FieldList(StringField('Media'))
     jsonString = StringField('jsonString')
 
-class DNSRecord(FlaskForm):
-    address = StringField('RVN Asset Address')
-    domain = StringField('Ravencoin Asset')
-    aRecord = StringField('A record')
-    aaaaRecord = StringField('AAAA record')
-    cName = StringField('CName')
-    mxRecord = StringField('MX record')
-    txtRecords = TextAreaField("txt records")
-    signature_hash = StringField('Signature Hash')
-    signature = StringField('Signature')
-
 
 ALL_FORMS = {
     "login": Login,

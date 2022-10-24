@@ -18,6 +18,7 @@
     <button type="button" class="btn btn-primary text-black p-1" id="proBtn" style="padding: 20px" width="100%">Update Profile</button>
     </td>
   </tr>
+
   <tr>
     <td>
       <a href="/logout" class="btn btn-primary text-black p-1" width="100%">Logout</a>
@@ -34,7 +35,7 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
 
-    {% include "kawModal.html.jinja" %}
+    {% include "modals/kawModal.html.jinja" %}
 
     </div>
   </div>
@@ -48,7 +49,7 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
 
-    {% include "articleModal.html.jinja" %}
+    {% include "modals/articleModal.html.jinja" %}
 
     </div>
   </div>
@@ -62,21 +63,7 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
 
-    {% include "profileModal.html.jinja" %}
-
-    </div>
-  </div>
-</div>
-
-<div class="modal" id="dnsModal" tabindex="-1">
-  <div class="modal-dialog">
-    <div class="modal-content bg-primary shadow p-1">
-      <div class="modal-header">
-        <h5 class="modal-title">DNS</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-
-    {% include "dnsModal.html.jinja" %}
+    {% include "modals/profileModal.html.jinja" %}
 
     </div>
   </div>
@@ -159,33 +146,6 @@ proSpan.onclick = function() {
 window.onclick = function(event) {
   if (event.target == proModal) {
     proModal.style.display = "none";
-  }
-}
-
-
-// Get the modal
-var dnsModal = document.getElementById("dnsModal");
-
-// Get the button that opens the modal
-var dnsBtn = document.getElementById("dnsBtn");
-
-// Get the <span> element that closes the modal
-var dnsSpan = document.getElementsByClassName("btn-close")[2];
-
-// When the user clicks on the button, open the modal
-dnsBtn.onclick = function() {
-  dnsModal.style.display = "block";
-}
-
-// When the user clicks on <span> (x), close the modal
-dnsSpan.onclick = function() {
-  dnsModal.style.display = "none";
-}
-
-// When the user clicks anywhere outside of the modal, close it
-window.onclick = function(event) {
-  if (event.target == dnsModal) {
-    dnsModal.style.display = "none";
   }
 }
 
