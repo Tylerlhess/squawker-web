@@ -18,12 +18,7 @@
     <button type="button" class="btn btn-primary text-black p-1" id="proBtn" style="padding: 20px" width="100%">Update Profile</button>
     </td>
   </tr>
-  <tr>
-    <td>
 
-    <button type="button" class="btn btn-primary text-black p-1" id="cnsBtn" style="padding: 20px" width="100%">Create CNS record</button>
-    </td>
-  </tr>
   <tr>
     <td>
       <a href="/logout" class="btn btn-primary text-black p-1" width="100%">Logout</a>
@@ -69,20 +64,6 @@
       </div>
 
     {% include "modals/profileModal.html.jinja" %}
-
-    </div>
-  </div>
-</div>
-
-<div class="modal" id="cnsModal" tabindex="-1">
-  <div class="modal-dialog">
-    <div class="modal-content bg-primary shadow p-1">
-      <div class="modal-header">
-        <h5 class="modal-title">CNS</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-
-    {% include "modals/cnsModal.html.jinja" %}
 
     </div>
   </div>
@@ -165,33 +146,6 @@ proSpan.onclick = function() {
 window.onclick = function(event) {
   if (event.target == proModal) {
     proModal.style.display = "none";
-  }
-}
-
-
-// Get the modal
-var cnsModal = document.getElementById("cnsModal");
-
-// Get the button that opens the modal
-var cnsBtn = document.getElementById("cnsBtn");
-
-// Get the <span> element that closes the modal
-var cnsSpan = document.getElementsByClassName("btn-close")[2];
-
-// When the user clicks on the button, open the modal
-cnsBtn.onclick = function() {
-  cnsModal.style.display = "block";
-}
-
-// When the user clicks on <span> (x), close the modal
-cnsSpan.onclick = function() {
-  cnsModal.style.display = "none";
-}
-
-// When the user clicks anywhere outside of the modal, close it
-window.onclick = function(event) {
-  if (event.target == cnsModal) {
-    cnsModal.style.display = "none";
   }
 }
 
