@@ -7,11 +7,9 @@ node {
          error('Dockerfile missing.')
       }
    }
-   stage('Build Docker') {
+   stage('Build/Run Docker') {
        // build the docker image from the source code using the BUILD_ID parameter in image name
-         sh "sudo docker build -t squawker-web ."
-   }
-   stage("run docker container"){
-        sh "sudo docker run -p 8010:8000 --name squawker-web -d squawker-web "
+       docker.image("squawker_web:${env.BUILD_ID}").withrun("-p 8010:8000")
+
     }
 }
