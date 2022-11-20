@@ -9,7 +9,8 @@ node {
    }
    stage('Build/Run Docker') {
        // build the docker image from the source code using the BUILD_ID parameter in image name
-       docker.image("squawker_web:${env.BUILD_ID}").withrun("-p 8010:8000")
+       def img = docker.build("squawker_web:${env.BUILD_ID}")
+       img.run("-p 8010:8000")
 
     }
 }
