@@ -12,6 +12,6 @@ node {
          sh "sudo docker build -t squawker-web ."
    }
    stage("run docker container"){
-        sh "sudo docker run -p 8000:8000 --name squawker-web -d squawker-web "
+        sh "sudo docker run -p 8010:8000 --name squawker-web -d squawker-web "
     }
 }
