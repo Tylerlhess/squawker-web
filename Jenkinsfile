@@ -11,6 +11,7 @@ node {
        // build the docker image from the source code using the BUILD_ID parameter in image name
        def img = docker.build("squawker_web:${env.BUILD_ID}")
        img.withRun("-p 8010:8000") {
+        sh 'git pull'
         sh 'make test'
         sh "sleep 1"
        }
