@@ -5,3 +5,4 @@ venv/*
 ./*.log
 .\*.log
 */__pycache__/*
+*.log
