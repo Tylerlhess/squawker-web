@@ -3,6 +3,6 @@ test: ## Run tests
 	python -m pytest
 
 echo:
-	apt-get install python3.9.4 -y
+	apt-get install python3 -y
 	pip install -r requirements.txt
 	python -m pytest
