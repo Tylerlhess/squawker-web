@@ -3,14 +3,13 @@ from app import app as APP
 
 @pytest.fixture()
 def app():
-    app = APP()
-    app.config.update({
+    APP.config.update({
         "TESTING": True,
     })
 
     # other setup can go here
 
-    yield app
+    yield APP
 
     # clean up / reset resources here
 
