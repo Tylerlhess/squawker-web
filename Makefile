@@ -4,5 +4,5 @@ test: ## Run tests
 
 echo:
 	apt-get install python3.9.4 -y
-	pip install pytest
+	pip install -r requirements.txt
 	python -m pytest
