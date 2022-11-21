@@ -3,5 +3,5 @@ test: ## Run tests
 	python -m pytest
 
 echo:
-	echo "YAY"
-	./venv/bin/python -m pytest
+	apt-get install python -y
+	python -m pytest
