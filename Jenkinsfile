@@ -1,5 +1,5 @@
 node {
-    stages {
+    try {
         stage('Get Source') {
             // copy source code from local file system and test
             // for a Dockerfile to build the Docker image
@@ -18,16 +18,13 @@ node {
             }
 
         }
-    }
-    post {
+    } finally {
         // Clean after build
-        always {
-            cleanWs(cleanWhenNotBuilt: false,
-                    deleteDirs: true,
-                    disableDeferredWipeout: true,
-                    notFailBuild: true,
-                    patterns: [[pattern: '.gitignore', type: 'INCLUDE'],
-                               [pattern: '.propsfile', type: 'EXCLUDE']])
-        }
+        cleanWs(cleanWhenNotBuilt: false,
+            deleteDirs: true,
+            disableDeferredWipeout: true,
+            notFailBuild: true,
+            patterns: [[pattern: '.gitignore', type: 'INCLUDE'],
+                       [pattern: '.propsfile', type: 'EXCLUDE']])
     }
 }
