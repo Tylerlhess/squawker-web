@@ -16,4 +16,5 @@ FILES = input output
 # The ${} notation is specific to the make syntax and is very similar to bash's $()
 # This function uses pytest to test our source files
 test:
+	PYTHONPATH=. pytest
 	${PYTHON} -m pytest
