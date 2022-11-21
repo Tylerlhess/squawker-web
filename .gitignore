@@ -4,4 +4,3 @@ venv/*
 /dbconn.py
 ./*.log
 */__pycache__/*
-!venv/Scripts/pytest.exe
