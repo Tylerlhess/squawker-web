@@ -4,4 +4,4 @@ test: ## Run tests
 
 echo:
 	echo "YAY"
-	python -m pytest
+	./venv/bin/python -m pytest
