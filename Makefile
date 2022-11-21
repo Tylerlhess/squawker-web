@@ -4,4 +4,4 @@ test: ## Run tests
 
 echo:
 	echo "YAY"
-	pytest
+	python -m pytest
