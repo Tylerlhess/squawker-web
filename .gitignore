@@ -3,4 +3,5 @@ venv/*
 .idea/*
 /dbconn.py
 ./*.log
+.\*.log
 */__pycache__/*
