@@ -14,6 +14,7 @@ node {
             def img = docker.build("squawker_web:${env.BUILD_ID}")
             img.withRun("-p 8010:8000") {
                 sh 'make test'
+                sh 'make echo'
                 sh "sleep 1"
             }
 
