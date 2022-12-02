@@ -46,7 +46,7 @@ def index():
     logger.info(f'Session started with {session} in index')
     if "signstring" not in session:
         session["signstring"] = gen_signstring()
-    conn = Conn()
+    #conn = Conn()
     messages = [Message(msg).html() for msg in api()]
     return render_template("front-page.html.jinja", base_url=site_url, messages=messages, kawForm=kawForm, articleForm=articleForm, profile_form=proForm, loginForm=loginForm)
 
