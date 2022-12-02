@@ -17,7 +17,7 @@ class Message():
         else:
             self.address = self.sender
         conn = Conn()
-        self.reply = [Message(rep).html() for rep in conn.get_replies(self.txid)]
+        self.reply = [] # [Message(rep).html() for rep in conn.get_replies(self.txid)]
 
     def __str__(self):
         return f"""{self.address} {self.text}"""
