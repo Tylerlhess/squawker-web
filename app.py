@@ -10,6 +10,8 @@ from Json_modules.json_blog import Article
 from Utils.squawker_errors import *
 from Json_modules.json_rss import rss
 
+
+
 try:
     from ServerEssentials.credentials import SITE_SECRET_KEY, site_url
 except:
@@ -45,7 +47,7 @@ def index():
     if "signstring" not in session:
         session["signstring"] = gen_signstring()
     conn = Conn()
-    messages = [Message(msg).html() for msg in conn.get_kaws()]
+    messages = [Message(msg).html() for msg in api()]
     return render_template("front-page.html.jinja", base_url=site_url, messages=messages, kawForm=kawForm, articleForm=articleForm, profile_form=proForm, loginForm=loginForm)
 
 

@@ -3,6 +3,7 @@ import logging
 import inspect
 from Utils.bip39 import BIP39WORDLIST
 import random
+import requests
 
 
 logger = logging.getLogger('squawker_utils')
@@ -225,4 +226,9 @@ def log_and_raise(error):
     logger.info(f"Exception {type(error)} {str(error)}")
     raise error
 
+def api():
+    url = 'https://test.squawker.app/api?call=messages'
+    r = requests.get(url)
+    logger.info(f"requests returned {r.text}, {r.status_code}")
+    return r.json()
 
