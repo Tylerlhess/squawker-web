@@ -2,7 +2,7 @@ import requests, json
 from flask import Flask, request, redirect, session, render_template
 from Utils.utils import *
 from market import Listing
-from dbconn import Conn
+#from dbconn import Conn
 from Utils.forms import *
 from Json_modules.json_message import Message
 from Json_modules.json_profile import Profile
