@@ -1,6 +1,7 @@
 from ServerEssentials.serverside import *
 from Utils.utils import get_logger
 from dbconn import Conn
+import requests
 
 
 logger = get_logger('squawker_profile')
@@ -9,8 +10,12 @@ logger = get_logger('squawker_profile')
 class Profile:
     def __init__(self, address):
         try:
-            conn = Conn()
-            self.__dict__ |= conn.get_profile(address)
+            #conn = Conn()
+            url = f'https://test.squawker.app/api?call=profile&secondary={address}'
+            r = requests.get(url)
+            logger.info(f"requests returned {r.text}, {r.status_code}")
+
+            self.__dict__ |= r.json()
             self.picture = None
         except TypeError as e:
             logger.info(f"Logging error {e}")
