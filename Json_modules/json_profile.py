@@ -13,8 +13,9 @@ class Profile:
             #conn = Conn()
             url = f'https://test.squawker.app/api?call=profile&secondary={address}'
             r = requests.get(url)
-            logger.info(f"requests returned {r.text}, {r.status_code}")
-
+            logger.info(f"requests returned {r.text}, {r.status_code} {r.json()} {len(r.json())}")
+            if len(r.json()) <= 0:
+                raise(TypeError("No profile returned"))
             self.__dict__ |= r.json()
             self.picture = None
         except TypeError as e:
@@ -51,6 +52,7 @@ class Profile:
 
     def html(self):
         html_dict = dict()
+        logger.info(f'html == {self.__dict__}')
         for atb in self.__dict__:
             if atb == "picture":
                 html_dict["picture"] = self.profile_picture
