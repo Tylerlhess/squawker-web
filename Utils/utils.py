@@ -226,9 +226,4 @@ def log_and_raise(error):
     logger.info(f"Exception {type(error)} {str(error)}")
     raise error
 
-def api():
-    url = 'https://test.squawker.app/api?call=messages'
-    r = requests.get(url)
-    logger.info(f"requests returned {r.text}, {r.status_code}")
-    return r.json()
 

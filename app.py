@@ -9,6 +9,7 @@ from Json_modules.json_profile import Profile
 from Json_modules.json_blog import Article
 from Utils.squawker_errors import *
 from Json_modules.json_rss import rss
+from Utils import api
 
 
 
@@ -47,7 +48,7 @@ def index():
     if "signstring" not in session:
         session["signstring"] = gen_signstring()
     #conn = Conn()
-    messages = [Message(msg).html() for msg in api()]
+    messages = [Message(msg).html() for msg in api.messages()]
     return render_template("front-page.html.jinja", base_url=site_url, messages=messages, kawForm=kawForm, articleForm=articleForm, profile_form=proForm, loginForm=loginForm)
 
 
@@ -252,8 +253,8 @@ def blogs():
     logger.info(f'Session started with {session} in blog_posts')
     if "signstring" not in session:
         session["signstring"] = gen_signstring()
-    conn = Conn()
-    articles = [Article(blog["address"], blog["ipfs_hash"]).short_html() for blog in conn.get_blogs()]
+    #conn = Conn()
+    articles = [Article(blog["address"], blog["ipfs_hash"]).short_html() for blog in api.get_blogs()]
     return render_template("extend_base/index2.html.jinja", base_url=site_url, articles=articles, kawForm=kawForm, articleForm=articleForm, profile_form=proForm, loginForm=loginForm)
 
 
