@@ -14,14 +14,14 @@ logger.addHandler(handler2)
 debug = 0
 
 
-def messages(self):
+def messages():
     url = 'https://test.squawker.app/api?call=messages'
     r = requests.get(url)
     logger.info(f"requests returned {r.text}, {r.status_code}")
     return r.json()
 
 
-def get_blogs(self):
+def get_blogs():
     url = 'https://test.squawker.app/api?call=articles'
     r = requests.get(url)
     logger.info(f"requests returned {r.text}, {r.status_code}")
